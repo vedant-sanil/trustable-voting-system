@@ -2,12 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1cee57b7-1c37-4c2e-a716-46557f203edc" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/blockchain/Node.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/14736-project4.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/14736-project4.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/Config.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/ConformanceTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/ConformanceTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/blockchain/MessageTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/blockchain/MessageTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Blockchain-1139575534.output" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Blockchain-830165805.output" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Blockchain1822226874.output" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Blockchain635924542.output" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/blockchain/Node.class" beforeDir="false" afterPath="$PROJECT_DIR$/blockchain/Node.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/blockchain/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/blockchain/Node.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/blockchain/NodeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/blockchain/NodeTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

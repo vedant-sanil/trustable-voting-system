@@ -114,7 +114,6 @@ abstract class NodeTest extends Test
                 {
                     socket = new Socket();
                     socket.connect(new InetSocketAddress(HOST_NAME, port));
-                    System.out.println(HOST_NAME + " " + port);
                     break;
                 }
                 catch (IOException e)

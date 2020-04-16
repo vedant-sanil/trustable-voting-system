@@ -75,5 +75,6 @@ public class Node {
         System.out.print(args.length);
 
         Node n = new Node(Integer.parseInt(args[0]), args[1]);
+        n.start();
     }
 }
