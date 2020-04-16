@@ -1,3 +1,0 @@
-Given the testing code and initial documentations, the initial approach to the project has been to develop a Node class. The node class involved setting up four different blockchain
-nodes based on the port numbers, and have them listen to each other on the ports. We faced a lot of initial issues setting the nodes up due to communication errors, (read: SocketExceptions
-etc.), but we have set up an initial code to promote communication between the nodes. The procedure to develop multiple API calls is being set up along with it. 

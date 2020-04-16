@@ -119,7 +119,6 @@ abstract class NodeTest extends Test
                 catch (IOException e)
                 {
                     // Ignore the exception to give server some time to start up
-                    e.printStackTrace();
                 }
             }
 
@@ -131,7 +130,6 @@ abstract class NodeTest extends Test
             }
             catch(IOException e) { }
         }
-        System.out.println("Here");
     }
 
     /**

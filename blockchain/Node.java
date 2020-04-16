@@ -67,8 +67,8 @@ public class Node {
         this.skeleton_started = true;
     }
 
-    private void node_api() {
-        this.getBlockChain();
+    private void node_api(HttpServer skeleton) {
+        this.getBlockChain(skeleton);
     }
 
     private void getBlockChain(HttpServer skeleton) {
@@ -80,11 +80,18 @@ public class Node {
                 GetChainRequest getChainRequest = null;
                 try {
                     InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
-                    getChainRequest = gson.fromJson(isr, getChainRequest.class);
-
+                    getChainRequest = gson.fromJson(isr, GetChainRequest.class);
+                    Block block = null;
+                } catch (Exception e) {
+                    returnCode = 404;
+                    jsonString="Request information is incorrect";
                 }
+            } else {
+                jsonString = "The REST method should be POST for <register>!\n";
+                returnCode = 400;
             }
-        }))
+            this.generateResponseAndClose(exchange, jsonString, returnCode);
+        }));
     }
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -98,5 +105,16 @@ public class Node {
 
         Node n = new Node(Integer.parseInt(args[0]), args[1]);
         n.start();
+    }
+
+    /**
+     * call this function when you want to write to response and close the connection.
+     */
+    private void generateResponseAndClose(HttpExchange exchange, String respText, int returnCode) throws IOException {
+        exchange.sendResponseHeaders(returnCode, respText.getBytes().length);
+        OutputStream output = exchange.getResponseBody();
+        output.write(respText.getBytes());
+        output.flush();
+        exchange.close();
     }
 }
