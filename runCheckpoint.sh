@@ -1,0 +1,2 @@
+rm Blockchain*
+make checkpoint

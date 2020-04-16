@@ -86,6 +86,7 @@ public class Config {
         String[] commands = new String[node_ports.length];
         for (int i = 0; i < node_ports.length; i++) {
             commands[i] = node_config + " " + i + " " + peers;
+            System.out.println(commands[i]);
         }
 
         return commands;
