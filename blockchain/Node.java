@@ -11,6 +11,7 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpExchange;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import message.*;
 
 public class Node {
     /** List of blockchain node ports */
@@ -59,10 +60,31 @@ public class Node {
         if (this.skeleton_started) return;
 
         for (HttpServer skeleton : this.node_skeleton) {
+            this.node_api(skeleton);
             skeleton.start();
         }
 
         this.skeleton_started = true;
+    }
+
+    private void node_api() {
+        this.getBlockChain();
+    }
+
+    private void getBlockChain(HttpServer skeleton) {
+        skeleton.createContext("/getchain", (exchange ->
+        {
+            String jsonString = "";
+            int returnCode = 0;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                GetChainRequest getChainRequest = null;
+                try {
+                    InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
+                    getChainRequest = gson.fromJson(isr, getChainRequest.class);
+
+                }
+            }
+        }))
     }
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
