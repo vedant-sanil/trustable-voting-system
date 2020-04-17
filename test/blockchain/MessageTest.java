@@ -63,7 +63,7 @@ public class MessageTest extends NodeTest
                 GetChainReply reply;
                 try
                 {
-                    System.out.println("Here");
+                    System.out.println("\nHere: Request Posted - "+request.chain_id);
                     reply = client.post(uri, request, GetChainReply.class);
                     System.out.println("Done!");
                     if (reply == null) throw new Exception();

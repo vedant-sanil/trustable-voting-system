@@ -18,28 +18,39 @@ public class Node {
     private ArrayList<Integer> ports;
     /** List of communication skeletons per port */
     private ArrayList<HttpServer> node_skeleton;
+    /** Skeleton Registration */
+    public HttpServer temp_skeleton;
     /** Check if skeletons have been started */
     private boolean skeleton_started = false;
     /** Node number*/
     private int node_num;
     /** Gson object which can parse json to an object. */
     protected Gson gson;
+    /** Block chain. < ArrayList of blocks > */
+    public List<Block> blockchain = new ArrayList<Block>();
+    /** Genesis Block */
+    public Map<String, String> test1 = Map.of(
+            "public_key", "xxx",
+            "user_name", "xxx"
+            );
+    public Block genesisBlock = new Block(0, test1,Long.parseLong("5415419034"),3413,"xxx","xxx");
 
     public Node(int NODENUM, String args) throws IOException{
         // For each port
         String[] port_list = args.split(",");
         this.node_num = NODENUM;
+        this.blockchain.add(genesisBlock);
         ports = new ArrayList<Integer>();
         node_skeleton = new ArrayList<HttpServer>();
 
         for (String arg : port_list) {
             Integer port = Integer.parseInt(arg);
             this.ports.add(port);
-            HttpServer temp_skeleton = HttpServer.create(new java.net.InetSocketAddress(port), 0);
-            temp_skeleton.setExecutor(Executors.newCachedThreadPool());
-            this.node_skeleton.add(temp_skeleton);
         }
-
+        System.out.println("Port on which it needs to be created - "+this.ports.get(NODENUM));
+        temp_skeleton = HttpServer.create(new java.net.InetSocketAddress(this.ports.get(NODENUM)), 0);
+        temp_skeleton.setExecutor(Executors.newCachedThreadPool());
+        this.node_skeleton.add(temp_skeleton);
         this.gson = new Gson();
     }
 
@@ -78,16 +89,46 @@ public class Node {
             int returnCode = 0;
             if ("POST".equals(exchange.getRequestMethod())) {
                 GetChainRequest getChainRequest = null;
+                GetChainReply getChainReply = null;
                 try {
                     InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
                     getChainRequest = gson.fromJson(isr, GetChainRequest.class);
-                    Block block = null;
+                    System.out.println("Coming into getchain: Value is");
+                    System.out.println(getChainRequest.chain_id);
+                    getChainReply = new GetChainReply(getChainRequest.chain_id, blockchain.size(), blockchain);
+                    System.out.println("getChainReply: "+getChainReply);
+                    jsonString = gson.toJson(getChainReply);
+                    returnCode = 200;
+                    System.out.println("JSON String: "+jsonString);
                 } catch (Exception e) {
                     returnCode = 404;
                     jsonString="Request information is incorrect";
                 }
             } else {
-                jsonString = "The REST method should be POST for <register>!\n";
+                jsonString = "The REST method should be POST for <getBlockChain>!\n";
+                returnCode = 400;
+            }
+            this.generateResponseAndClose(exchange, jsonString, returnCode);
+        }));
+    }
+
+
+    private void mineblock(HttpServer skeleton) {
+        skeleton.createContext("/mineblock", (exchange ->
+        {
+            String jsonString = "";
+            int returnCode = 0;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                GetChainRequest getChainRequest = null;
+                GetChainReply getChainReply = null;
+                try {
+
+                } catch (Exception e) {
+                    returnCode = 404;
+                    jsonString="Request information is incorrect";
+                }
+            } else {
+                jsonString = "The REST method should be POST for <mineBlock>!\n";
                 returnCode = 400;
             }
             this.generateResponseAndClose(exchange, jsonString, returnCode);
@@ -96,13 +137,12 @@ public class Node {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
         Random rand = new Random();
-        File file = new File("./Blockchain" + rand.nextInt() + ".output");
+        File file = new File("./Blockchain" + args[0] + ".output");
         PrintStream stream = new PrintStream(file);
         System.setOut(stream);
         System.setErr(stream);
-
-        System.out.print(args.length);
-
+        System.out.println("PORTS ARE: "+args[0]+" "+args[1]);
+        System.out.println("++++++++++++++++++++++++++++++++");
         Node n = new Node(Integer.parseInt(args[0]), args[1]);
         n.start();
     }

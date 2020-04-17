@@ -10,6 +10,7 @@
 package blockchain;
 
 import java.lang.String;
+import message.*;
 
 public class Chain {
     /** Element pointing to the head of the LinkedList */
@@ -29,15 +30,15 @@ public class Chain {
      * @param block : Input block to be added to the chain
      * @return
      */
-    public Chain addBlock(Chain chain, Block block) {
-        ChainElement elem = new ChainElement(block);
-
-        // Check if linkedList is empty
-        if ((chain.head == null) && (chain.tail == null)) {
-            chain.head = elem;
-            chain.tail = elem;
-        } else {
-
-        }
-    }
+//    public Chain addBlock(Chain chain, Block block) {
+//        ChainElement elem = new ChainElement(block);
+//
+//        // Check if linkedList is empty
+//        if ((chain.head == null) && (chain.tail == null)) {
+//            chain.head = elem;
+//            chain.tail = elem;
+//        } else {
+//
+//        }
+//    }
 }

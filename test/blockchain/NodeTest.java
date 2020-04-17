@@ -91,11 +91,14 @@ abstract class NodeTest extends Test
         String configs[] = Config.getNodeConfigs();
         try
         {
+            System.out.println("\n--------------------");
             for (int i = 0; i < configs.length; i++) {
                 String cmd = configs[i];
+                System.out.println("Cmd "+i+" is : "+cmd);
                 Process server = spawnProcess(cmd);
                 servers.add(server);
             }
+            System.out.println("--------------------");
         }
         catch (Throwable t)
         {
