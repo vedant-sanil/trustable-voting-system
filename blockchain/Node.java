@@ -155,7 +155,7 @@ public class Node {
                     System.out.println("Coming into addblock: Block is");
                     System.out.println(addBlockRequest.getBlock().toString());
                     Map<String, Object> resmap = new HashMap<String, Object>();
-                    this.synchronizeBlockchain(this.ports);
+                    this.synchronize();
                     resmap.put("info", "");
                     BroadcastRequest reqToSend = new BroadcastRequest(addBlockRequest.getChainId(), "PRECOMMIT", addBlockRequest.getBlock());
                     HttpResponse<String> response = null;
@@ -164,7 +164,7 @@ public class Node {
                         for (int i = 0; i < this.ports.size(); i++)
                         {
                             if (i != this.node_num) {
-                                response = this.getResponse("/broadcastblock", this.ports.get(i), reqToSend);
+                                response = this.getResponse("/broadcast", this.ports.get(i), reqToSend);
                                 if (response.statusCode() == 200)
                                 {
                                     vote_cnt += 1;
@@ -179,7 +179,7 @@ public class Node {
                             for (int i = 0; i < this.ports.size(); i++)
                             {
                                 if (i != this.node_num) {
-                                    response = this.getResponse("/broadcastblock", this.ports.get(i), reqToSend);
+                                    response = this.getResponse("/broadcast", this.ports.get(i), reqToSend);
                                 }
                             }
                             returnCode = 200;
@@ -207,7 +207,7 @@ public class Node {
 
 
     private void broadcastBlock(HttpServer skeleton) {
-        skeleton.createContext("/broadcastblock", (exchange ->
+        skeleton.createContext("/broadcast", (exchange ->
         {
             String jsonString = "";
             int returnCode = 0;
@@ -223,7 +223,7 @@ public class Node {
                     System.out.println("Coming into broadcastblock: Block is");
                     System.out.println(getBroadcastRequest.block.toString());
                     Map<String, Object> resmap = new HashMap<String, Object>();
-                    this.synchronizeBlockchain(this.ports);
+                    this.synchronize();
                     resmap.put("info", "");
                     if (getBroadcastRequest.request_type.equals("PRECOMMIT"))
                     {
@@ -262,29 +262,23 @@ public class Node {
         }));
     }
 
-    private void synchronizeBlockchain(List<Integer> ports) {
+    private void synchronize() {
         System.out.println("++++++++++++++SYNC BLOCKCHAIN+++++++++++++++++");
-        GetChainRequest reqToSend = new GetChainRequest(1);
-        GetChainReply reply = null;
-        HttpResponse<String> response = null;
-        for (int i = 0; i < ports.size(); i++)
-        {
-            if (this.node_num != i)
-            {
-                System.out.println("Port Value: "+ports.get(i));
+        for (int port_num : this.ports) {
+            if (port_num != this.ports.get(this.node_num)) {
+                // Communicating with peer nodes
                 try {
-                    response = this.getResponse("/getchain", this.ports.get(i), reqToSend);
+                    GetChainRequest request = new GetChainRequest(1);
+                    HttpResponse<String> response = this.getResponse("/getchain", port_num, request);
+                    GetChainReply message = gson.fromJson(response.body(), GetChainReply.class);
+                    if (this.blockchain.size() < message.getChainLength()) {
+                        System.out.println("Current blockchain not up-to-date, re-update");
+                        this.blockchain = message.getBlocks();
+                    }
+                    System.out.println("Blockchain value is "+this.blockchain);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                reply = gson.fromJson(response.body(), reply.getClass());
-                System.out.println("Reply is "+reply);
-                if (reply.getBlocks().size() > blockchain.size())
-                {
-                    blockchain = reply.getBlocks();
-                    System.out.println("Blockchain is being updated");
-                }
-                System.out.println("Blockchain value is "+this.blockchain);
             }
         }
     }

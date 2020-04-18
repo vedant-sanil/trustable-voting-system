@@ -38,9 +38,9 @@ public class MessageTest extends NodeTest
     {
         testGetChainRequest();
 //        testMineBlockRequest();
-        testAddBlockRequest();
+//        testAddBlockRequest();
         testBroadcastRequest();
-        testSleepRequest();
+//        testSleepRequest();
     }
 
     /**
@@ -188,7 +188,7 @@ public class MessageTest extends NodeTest
 
             BroadcastRequest request = new BroadcastRequest(chain_id,
                     request_type, block);
-
+            System.out.println("Broadcast Request:  "+request.getChainId()+" "+request.getRequestType()+" "+request.getBlock());
             for (int i = 0; i < nodes.size(); i++) {
                 int port = nodes.get(i);
                 String uri = HOST_URI + port + BROADCAST_URI;
