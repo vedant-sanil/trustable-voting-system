@@ -33,11 +33,11 @@ public class Node {
             "public_key", "xxx",
             "user_name", "xxx"
             );
-    /** Nonce of a block to mine with */
     private long nonce = 3413;
-
-    /** Create genesis block */
     public Block genesisBlock = new Block(0, test1,Long.parseLong("5415419034"),nonce,"xxx","xxx");
+
+    /** Flag to check if node is asleep or not */
+    public boolean isSleep = false;
 
     public Node(int NODENUM, String args) throws IOException{
         // For each port
@@ -84,9 +84,10 @@ public class Node {
 
     private void node_api(HttpServer skeleton) {
         this.getBlockChain(skeleton);
+        this.mineBlock(skeleton);
         this.addBlock(skeleton);
         this.broadcastBlock(skeleton);
-        this.mineblock(skeleton);
+        this.sleepChain(skeleton);
     }
 
     private void getBlockChain(HttpServer skeleton) {
@@ -94,7 +95,7 @@ public class Node {
         {
             String jsonString = "";
             int returnCode = 0;
-            if ("POST".equals(exchange.getRequestMethod())) {
+            if ("POST".equals(exchange.getRequestMethod()) && this.isSleep == false) {
                 GetChainRequest getChainRequest = null;
                 GetChainReply getChainReply = null;
                 try {
@@ -119,16 +120,55 @@ public class Node {
         }));
     }
 
-    /**
-     * Mine a new block and store data provided by user in it
-     * @param skeleton : Httpserver skeleton
-     */
-    private void mineblock(HttpServer skeleton) {
+
+    private void sleepChain(HttpServer skeleton) {
+        skeleton.createContext("/sleep", (exchange ->
+        {
+            String jsonString = "";
+            int returnCode = 0;
+            SleepRequest sleepRequest = null;
+            if ("POST".equals(exchange.getRequestMethod()) && this.isSleep == false) {
+                try {
+                    InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
+                    sleepRequest = gson.fromJson(isr, SleepRequest.class);
+                    System.out.println("Coming into sleepchain: Value is");
+                    System.out.println(sleepRequest.getTimeout());
+                    Map<String, Object> resmap = new HashMap<String, Object>();
+                    resmap.put("success", "true");
+                    resmap.put("info", "");
+                    jsonString = gson.toJson(resmap);
+                    returnCode = 200;
+                    System.out.println("JSON String: "+jsonString);
+                } catch (Exception e) {
+                    returnCode = 404;
+                    jsonString="Request information is incorrect";
+                }
+            } else {
+                jsonString = "The REST method should be POST for <getBlockChain>!\n";
+                returnCode = 400;
+            }
+            this.generateResponseAndClose(exchange, jsonString, returnCode);
+            synchronized (this) {
+                this.isSleep = true;
+                try{
+                    Thread.sleep(sleepRequest.getTimeout());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                this.isSleep = false;
+            }
+        }));
+    }
+
+
+
+
+    private void mineBlock(HttpServer skeleton) {
         skeleton.createContext("/mineblock", (exchange ->
         {
             String jsonString = "";
             int returnCode = 0;
-            if ("POST".equals(exchange.getRequestMethod())) {
+            if ("POST".equals(exchange.getRequestMethod()) && this.isSleep == false) {
                 MineBlockRequest mineBlockRequest = null;
                 BlockReply blockReply = null;
                 try {
@@ -152,7 +192,7 @@ public class Node {
                                 curr_time, nonce, prev_hash, mined_hash);
 
                         System.out.println(mined_hash);
-                        if (mined_hash.startsWith("0")) {
+                        if (mined_hash.startsWith("0000")) {
                             System.out.println("Generated hash");
                             break;
                         }
@@ -178,12 +218,14 @@ public class Node {
     }
 
 
+
+
     private void addBlock(HttpServer skeleton) {
         skeleton.createContext("/addblock", (exchange ->
         {
             String jsonString = "";
             int returnCode = 0;
-            if ("POST".equals(exchange.getRequestMethod())) {
+            if ("POST".equals(exchange.getRequestMethod()) && this.isSleep == false) {
                 AddBlockRequest addBlockRequest = null;
                 try {
                     InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
@@ -249,7 +291,7 @@ public class Node {
         {
             String jsonString = "";
             int returnCode = 0;
-            if ("POST".equals(exchange.getRequestMethod())) {
+            if ("POST".equals(exchange.getRequestMethod()) && this.isSleep == false) {
                 BroadcastRequest getBroadcastRequest = null;
                 try {
                     InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
@@ -321,12 +363,6 @@ public class Node {
         }
     }
 
-    /**
-     * Main function
-     * @param args : command line arguments
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
     public static void main(String[] args) throws FileNotFoundException, IOException {
         Random rand = new Random();
         File file = new File("./Blockchain" + args[0] + ".output");
@@ -339,32 +375,7 @@ public class Node {
         n.start();
     }
 
-
-    /**
-     * call this function when you want to write to response and close the connection.
-     * @param exchange : The exchange method
-     * @param respText : Response text
-     * @param returnCode : Return code to identify if the file returned correctly
-     * @throws IOException
-     */
-    private void generateResponseAndClose(HttpExchange exchange, String respText, int returnCode) throws IOException {
-        exchange.sendResponseHeaders(returnCode, respText.getBytes().length);
-        OutputStream output = exchange.getResponseBody();
-        output.write(respText.getBytes());
-        output.flush();
-        exchange.close();
-        System.out.println("++++++++++++++++++++++++++++++++");
-    }
-
-    /**
-     * Function to send a request at a port and receive the corresponding response
-     * @param method : Name of request method
-     * @param port : Port of communication
-     * @param requestObj : Object to be requested
-     * @return response : Response based on request handler in peer node
-     * @throws IOException
-     * @throws InterruptedException
-     */
+    /** Function to generate reponse */
     private HttpResponse<String> getResponse(String method,
                                              int port,
                                              Object requestObj) throws IOException, InterruptedException {
@@ -374,7 +385,26 @@ public class Node {
                 .setHeader("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestObj)))
                 .build();
-        response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-        return response;
+        System.out.println("HTTP Request is "+request);
+        try {
+            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    /**
+     * call this function when you want to write to response and close the connection.
+     */
+    private void generateResponseAndClose(HttpExchange exchange, String respText, int returnCode) throws IOException {
+        exchange.sendResponseHeaders(returnCode, respText.getBytes().length);
+        OutputStream output = exchange.getResponseBody();
+        output.write(respText.getBytes());
+        output.flush();
+        exchange.close();
+        System.out.println("++++++++++++++++++++++++++++++++");
     }
 }

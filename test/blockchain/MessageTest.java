@@ -37,10 +37,10 @@ public class MessageTest extends NodeTest
     protected void perform() throws TestFailed
     {
         testGetChainRequest();
-//        testMineBlockRequest();
-//        testAddBlockRequest();
+        testMineBlockRequest();
+        testAddBlockRequest();
         testBroadcastRequest();
-//        testSleepRequest();
+        testSleepRequest();
     }
 
     /**
@@ -63,7 +63,9 @@ public class MessageTest extends NodeTest
                 GetChainReply reply;
                 try
                 {
+                    System.out.println("\nHere: Request Posted - "+request.chain_id);
                     reply = client.post(uri, request, GetChainReply.class);
+                    System.out.println("Done!");
                     if (reply == null) throw new Exception();
                 }
                 catch (Exception ex)
