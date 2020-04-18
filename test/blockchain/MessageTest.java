@@ -36,11 +36,11 @@ public class MessageTest extends NodeTest
     @Override
     protected void perform() throws TestFailed
     {
-        testGetChainRequest();
+//        testGetChainRequest();
         testMineBlockRequest();
-        testAddBlockRequest();
-        testBroadcastRequest();
-        testSleepRequest();
+//        testAddBlockRequest();
+//        testBroadcastRequest();
+//        testSleepRequest();
     }
 
     /**

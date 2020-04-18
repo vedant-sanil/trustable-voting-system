@@ -33,7 +33,7 @@ public class Node {
             "public_key", "xxx",
             "user_name", "xxx"
             );
-    private long nonce = 3413;
+    public long nonce = 3413;
     public Block genesisBlock = new Block(0, test1,Long.parseLong("5415419034"),nonce,"xxx","xxx");
 
     /** Flag to check if node is asleep or not */
@@ -168,7 +168,7 @@ public class Node {
         {
             String jsonString = "";
             int returnCode = 0;
-            if ("POST".equals(exchange.getRequestMethod()) && this.isSleep == false) {
+            if ("POST".equals(exchange.getRequestMethod())) {
                 MineBlockRequest mineBlockRequest = null;
                 BlockReply blockReply = null;
                 try {
@@ -180,22 +180,16 @@ public class Node {
 
                     String prev_hash = this.blockchain.get(this.blockchain.size()-1).getHash();
 
+                    // Get time, increment nonce and add init block
+                    long curr_time = System.currentTimeMillis();
                     // Get current hash by mining through difficulty 5
-                    String mined_hash = "inithashed";
-                    while (true) {
-                        // Get time, increment nonce and add init block
-                        long curr_time = System.currentTimeMillis();
-                        nonce++;
+                    String mined_hash = "xxx";
 
+                    while (!mined_hash.startsWith("00000")) {
+                        nonce++;
                         // Create temporary new block
                         init_block = new Block(this.node_num, mineBlockRequest.getData(),
                                 curr_time, nonce, prev_hash, mined_hash);
-
-                        System.out.println(mined_hash);
-                        if (mined_hash.startsWith("0000")) {
-                            System.out.println("Generated hash");
-                            break;
-                        }
                         mined_hash = Block.computeHash(init_block);
                     }
 
