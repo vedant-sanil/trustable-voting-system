@@ -2,19 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1cee57b7-1c37-4c2e-a716-46557f203edc" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/blockchain/Chain.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/blockchain/ChainElement.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Blockchain-1646449124.output" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Blockchain114100235.output" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Blockchain1246584217.output" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Blockchain1913979971.output" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/blockchain/Node.class" beforeDir="false" afterPath="$PROJECT_DIR$/blockchain/Node.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/blockchain/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/blockchain/Node.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.txt.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/Config.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/blockchain/NodeTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/test/blockchain/NodeTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/blockchain/NodeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/blockchain/NodeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/blockchain/MessageTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/blockchain/MessageTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,11 +84,11 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="249" y="0" key="SettingsEditor/0.0.1536.824/1920.0.2048.1112@0.0.1536.824" timestamp="1586991447716" />
-    <state x="465" y="236" key="com.intellij.ide.util.TipDialog" timestamp="1587057250876">
+    <state x="465" y="236" key="com.intellij.ide.util.TipDialog" timestamp="1587148139519">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="465" y="236" key="com.intellij.ide.util.TipDialog/0.0.1536.824/1920.0.2048.1112@0.0.1536.824" timestamp="1587057250876" />
-    <state x="465" y="236" key="com.intellij.ide.util.TipDialog/0.0.1536.824@0.0.1536.824" timestamp="1586894861165" />
+    <state x="465" y="236" key="com.intellij.ide.util.TipDialog/0.0.1536.824@0.0.1536.824" timestamp="1587148139519" />
     <state x="463" y="144" width="609" height="536" key="find.popup" timestamp="1586976121693">
       <screen x="0" y="0" width="1536" height="824" />
     </state>

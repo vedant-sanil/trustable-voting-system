@@ -33,7 +33,11 @@ public class Node {
             "public_key", "xxx",
             "user_name", "xxx"
             );
-    public Block genesisBlock = new Block(0, test1,Long.parseLong("5415419034"),3413,"xxx","xxx");
+    /** Nonce of a block to mine with */
+    private long nonce = 3413;
+
+    /** Create genesis block */
+    public Block genesisBlock = new Block(0, test1,Long.parseLong("5415419034"),nonce,"xxx","xxx");
 
     public Node(int NODENUM, String args) throws IOException{
         // For each port
@@ -82,6 +86,7 @@ public class Node {
         this.getBlockChain(skeleton);
         this.addBlock(skeleton);
         this.broadcastBlock(skeleton);
+        this.mineblock(skeleton);
     }
 
     private void getBlockChain(HttpServer skeleton) {
@@ -97,7 +102,7 @@ public class Node {
                     getChainRequest = gson.fromJson(isr, GetChainRequest.class);
                     System.out.println("Coming into getchain: Value is");
                     System.out.println(getChainRequest.chain_id);
-                    getChainReply = new GetChainReply(getChainRequest.chain_id, blockchain.size(), blockchain);
+                    getChainReply = new GetChainReply(getChainRequest.chain_id, this.blockchain.size(), this.blockchain);
                     System.out.println("getChainReply: "+getChainReply);
                     jsonString = gson.toJson(getChainReply);
                     returnCode = 200;
@@ -114,17 +119,51 @@ public class Node {
         }));
     }
 
-
-    private void mineBlock(HttpServer skeleton) {
+    /**
+     * Mine a new block and store data provided by user in it
+     * @param skeleton : Httpserver skeleton
+     */
+    private void mineblock(HttpServer skeleton) {
         skeleton.createContext("/mineblock", (exchange ->
         {
             String jsonString = "";
             int returnCode = 0;
             if ("POST".equals(exchange.getRequestMethod())) {
-                GetChainRequest getChainRequest = null;
-                GetChainReply getChainReply = null;
+                MineBlockRequest mineBlockRequest = null;
+                BlockReply blockReply = null;
                 try {
+                    Block init_block = null;
+                    // Synchronize the blockcain before mining
+                    this.synchronize();
+                    InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
+                    mineBlockRequest = gson.fromJson(isr, MineBlockRequest.class);
 
+                    String prev_hash = this.blockchain.get(this.blockchain.size()-1).getHash();
+
+                    // Get current hash by mining through difficulty 5
+                    String mined_hash = "inithashed";
+                    while (true) {
+                        // Get time, increment nonce and add init block
+                        long curr_time = System.currentTimeMillis();
+                        nonce++;
+
+                        // Create temporary new block
+                        init_block = new Block(this.node_num, mineBlockRequest.getData(),
+                                curr_time, nonce, prev_hash, mined_hash);
+
+                        System.out.println(mined_hash);
+                        if (mined_hash.startsWith("0")) {
+                            System.out.println("Generated hash");
+                            break;
+                        }
+                        mined_hash = Block.computeHash(init_block);
+                    }
+
+                    // Successfully create blockchain reply
+                    blockReply = new BlockReply(mineBlockRequest.getChainId(), init_block);
+                    jsonString = gson.toJson(blockReply);
+                    returnCode = 200;
+                    System.out.println(jsonString);
                 } catch (Exception e) {
                     e.printStackTrace();
                     returnCode = 404;
@@ -137,7 +176,6 @@ public class Node {
             this.generateResponseAndClose(exchange, jsonString, returnCode);
         }));
     }
-
 
 
     private void addBlock(HttpServer skeleton) {
@@ -283,6 +321,12 @@ public class Node {
         }
     }
 
+    /**
+     * Main function
+     * @param args : command line arguments
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public static void main(String[] args) throws FileNotFoundException, IOException {
         Random rand = new Random();
         File file = new File("./Blockchain" + args[0] + ".output");
@@ -295,7 +339,32 @@ public class Node {
         n.start();
     }
 
-    /** Function to generate reponse */
+
+    /**
+     * call this function when you want to write to response and close the connection.
+     * @param exchange : The exchange method
+     * @param respText : Response text
+     * @param returnCode : Return code to identify if the file returned correctly
+     * @throws IOException
+     */
+    private void generateResponseAndClose(HttpExchange exchange, String respText, int returnCode) throws IOException {
+        exchange.sendResponseHeaders(returnCode, respText.getBytes().length);
+        OutputStream output = exchange.getResponseBody();
+        output.write(respText.getBytes());
+        output.flush();
+        exchange.close();
+        System.out.println("++++++++++++++++++++++++++++++++");
+    }
+
+    /**
+     * Function to send a request at a port and receive the corresponding response
+     * @param method : Name of request method
+     * @param port : Port of communication
+     * @param requestObj : Object to be requested
+     * @return response : Response based on request handler in peer node
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private HttpResponse<String> getResponse(String method,
                                              int port,
                                              Object requestObj) throws IOException, InterruptedException {
@@ -305,26 +374,7 @@ public class Node {
                 .setHeader("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestObj)))
                 .build();
-        System.out.println("HTTP Request is "+request);
-        try {
-            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            return response;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
-    /**
-     * call this function when you want to write to response and close the connection.
-     */
-    private void generateResponseAndClose(HttpExchange exchange, String respText, int returnCode) throws IOException {
-        exchange.sendResponseHeaders(returnCode, respText.getBytes().length);
-        OutputStream output = exchange.getResponseBody();
-        output.write(respText.getBytes());
-        output.flush();
-        exchange.close();
-        System.out.println("++++++++++++++++++++++++++++++++");
+        response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        return response;
     }
 }
