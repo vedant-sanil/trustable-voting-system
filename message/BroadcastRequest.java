@@ -11,9 +11,9 @@ package message;
 
 
 public class BroadcastRequest {
-    private int chain_id;
-    String request_type;
-    private Block block;
+    public int chain_id;
+    public String request_type;
+    public Block block;
 
     public BroadcastRequest(int chain_id, String request_type, Block block) {
         this.chain_id = chain_id;

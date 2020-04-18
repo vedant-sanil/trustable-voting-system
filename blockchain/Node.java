@@ -80,6 +80,8 @@ public class Node {
 
     private void node_api(HttpServer skeleton) {
         this.getBlockChain(skeleton);
+        this.addBlock(skeleton);
+        this.broadcastBlock(skeleton);
     }
 
     private void getBlockChain(HttpServer skeleton) {
@@ -113,7 +115,7 @@ public class Node {
     }
 
 
-    private void mineblock(HttpServer skeleton) {
+    private void mineBlock(HttpServer skeleton) {
         skeleton.createContext("/mineblock", (exchange ->
         {
             String jsonString = "";
@@ -124,6 +126,7 @@ public class Node {
                 try {
 
                 } catch (Exception e) {
+                    e.printStackTrace();
                     returnCode = 404;
                     jsonString="Request information is incorrect";
                 }
@@ -133,6 +136,157 @@ public class Node {
             }
             this.generateResponseAndClose(exchange, jsonString, returnCode);
         }));
+    }
+
+
+
+    private void addBlock(HttpServer skeleton) {
+        skeleton.createContext("/addblock", (exchange ->
+        {
+            String jsonString = "";
+            int returnCode = 0;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                AddBlockRequest addBlockRequest = null;
+                try {
+                    InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
+                    addBlockRequest = gson.fromJson(isr, AddBlockRequest.class);
+                    System.out.println("Coming into addblock: Chain ID is");
+                    System.out.println(addBlockRequest.getChainId());
+                    System.out.println("Coming into addblock: Block is");
+                    System.out.println(addBlockRequest.getBlock().toString());
+                    Map<String, Object> resmap = new HashMap<String, Object>();
+                    this.synchronizeBlockchain(this.ports);
+                    resmap.put("info", "");
+                    BroadcastRequest reqToSend = new BroadcastRequest(addBlockRequest.getChainId(), "PRECOMMIT", addBlockRequest.getBlock());
+                    HttpResponse<String> response = null;
+                    try {
+                        int vote_cnt = 0;
+                        for (int i = 0; i < this.ports.size(); i++)
+                        {
+                            if (i != this.node_num) {
+                                response = this.getResponse("/broadcastblock", this.ports.get(i), reqToSend);
+                                if (response.statusCode() == 200)
+                                {
+                                    vote_cnt += 1;
+                                }
+                            }
+                        }
+                        System.out.println("Vote Count is "+ vote_cnt +" | Ports.length is "+this.ports.size());
+                        if (vote_cnt > (this.ports.size() * 0.66))
+                        {
+                            reqToSend = new BroadcastRequest(addBlockRequest.getChainId(), "COMMIT", addBlockRequest.getBlock());
+                            resmap.put("success", "true");
+                            for (int i = 0; i < this.ports.size(); i++)
+                            {
+                                if (i != this.node_num) {
+                                    response = this.getResponse("/broadcastblock", this.ports.get(i), reqToSend);
+                                }
+                            }
+                            returnCode = 200;
+                        } else {
+                            returnCode = 409;
+                            resmap.put("success", "false");
+                        }
+                        System.out.println("RESMAP at addBlock - "+resmap);
+                        jsonString = gson.toJson(resmap);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    returnCode = 404;
+                    jsonString="Request information is incorrect";
+                }
+            } else {
+                jsonString = "The REST method should be POST for <addBlock>!\n";
+                returnCode = 400;
+            }
+            this.generateResponseAndClose(exchange, jsonString, returnCode);
+        }));
+    }
+
+
+    private void broadcastBlock(HttpServer skeleton) {
+        skeleton.createContext("/broadcastblock", (exchange ->
+        {
+            String jsonString = "";
+            int returnCode = 0;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                BroadcastRequest getBroadcastRequest = null;
+                try {
+                    InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
+                    getBroadcastRequest = gson.fromJson(isr, BroadcastRequest.class);
+                    System.out.println("Coming into broadcastblock: Chain ID is");
+                    System.out.println(getBroadcastRequest.chain_id);
+                    System.out.println("Coming into broadcastblock: Request Type is");
+                    System.out.println(getBroadcastRequest.request_type);
+                    System.out.println("Coming into broadcastblock: Block is");
+                    System.out.println(getBroadcastRequest.block.toString());
+                    Map<String, Object> resmap = new HashMap<String, Object>();
+                    this.synchronizeBlockchain(this.ports);
+                    resmap.put("info", "");
+                    if (getBroadcastRequest.request_type.equals("PRECOMMIT"))
+                    {
+                        if (getBroadcastRequest.block.previous_hash.equals(blockchain.get(blockchain.size() - 1).hash))
+                        {
+                            String computed_hash = Block.computeHash(getBroadcastRequest.block);
+                            if (computed_hash.equals(getBroadcastRequest.block.hash))
+                            {
+                                returnCode = 200;
+                                resmap.put("success", "true");
+                            } else {
+                                returnCode = 409;
+                                resmap.put("success", "false");
+                            }
+                        } else {
+                            returnCode = 409;
+                            resmap.put("success", "false");
+                        }
+                    } else {
+                        blockchain.add(getBroadcastRequest.block);
+                        resmap.put("success", "true");
+                        returnCode = 200;
+                    }
+                    System.out.println("RESMAP at addBlock - "+resmap);
+                    jsonString = gson.toJson(resmap);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    returnCode = 404;
+                    jsonString="Request information is incorrect";
+                }
+            } else {
+                jsonString = "The REST method should be POST for <mineBlock>!\n";
+                returnCode = 400;
+            }
+            this.generateResponseAndClose(exchange, jsonString, returnCode);
+        }));
+    }
+
+    private void synchronizeBlockchain(List<Integer> ports) {
+        System.out.println("++++++++++++++SYNC BLOCKCHAIN+++++++++++++++++");
+        GetChainRequest reqToSend = new GetChainRequest(1);
+        GetChainReply reply = null;
+        HttpResponse<String> response = null;
+        for (int i = 0; i < ports.size(); i++)
+        {
+            if (this.node_num != i)
+            {
+                System.out.println("Port Value: "+ports.get(i));
+                try {
+                    response = this.getResponse("/getchain", this.ports.get(i), reqToSend);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                reply = gson.fromJson(response.body(), reply.getClass());
+                System.out.println("Reply is "+reply);
+                if (reply.getBlocks().size() > blockchain.size())
+                {
+                    blockchain = reply.getBlocks();
+                    System.out.println("Blockchain is being updated");
+                }
+                System.out.println("Blockchain value is "+this.blockchain);
+            }
+        }
     }
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
@@ -147,6 +301,27 @@ public class Node {
         n.start();
     }
 
+    /** Function to generate reponse */
+    private HttpResponse<String> getResponse(String method,
+                                             int port,
+                                             Object requestObj) throws IOException, InterruptedException {
+
+        HttpResponse<String> response;
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + method))
+                .setHeader("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestObj)))
+                .build();
+        System.out.println("HTTP Request is "+request);
+        try {
+            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     /**
      * call this function when you want to write to response and close the connection.
      */
@@ -156,5 +331,6 @@ public class Node {
         output.write(respText.getBytes());
         output.flush();
         exchange.close();
+        System.out.println("++++++++++++++++++++++++++++++++");
     }
 }

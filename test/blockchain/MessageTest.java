@@ -37,7 +37,7 @@ public class MessageTest extends NodeTest
     protected void perform() throws TestFailed
     {
         testGetChainRequest();
-        testMineBlockRequest();
+//        testMineBlockRequest();
         testAddBlockRequest();
         testBroadcastRequest();
         testSleepRequest();
