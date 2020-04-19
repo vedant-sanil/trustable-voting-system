@@ -171,7 +171,7 @@ public class Node {
                 this.isSleep = true;
             }
             try {
-                Thread.sleep(sleepRequest.getTimeout());
+                Thread.sleep(sleepRequest.getTimeout()*1000);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -376,10 +376,10 @@ public class Node {
                             }
                         }
                     } else {
-                        if (getBroadcastRequest.getChainId() == 1)
+                        if (getBroadcastRequest.getChainId() == 1 && !blockchain.get(blockchain.size() - 1).getHash().equals(getBroadcastRequest.block.getHash()))
                         {
                             blockchain.add(getBroadcastRequest.block);
-                        } else {
+                        } else if (getBroadcastRequest.getChainId() == 2 && !votechain.get(votechain.size() - 1).getHash().equals(getBroadcastRequest.block.getHash())){
                             votechain.add(getBroadcastRequest.block);
                         }
                         resmap.put("success", "true");
