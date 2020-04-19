@@ -36,11 +36,11 @@ public class MessageTest extends NodeTest
     @Override
     protected void perform() throws TestFailed
     {
-//        testGetChainRequest();
+        testGetChainRequest();
         testMineBlockRequest();
-//        testAddBlockRequest();
-//        testBroadcastRequest();
-//        testSleepRequest();
+        testAddBlockRequest();
+        testBroadcastRequest();
+        testSleepRequest();
     }
 
     /**
@@ -63,9 +63,9 @@ public class MessageTest extends NodeTest
                 GetChainReply reply;
                 try
                 {
-                    System.out.println("\nHere: Request Posted - "+request.chain_id);
+//                    System.out.println("\nHere: Request Posted - "+request.chain_id);
                     reply = client.post(uri, request, GetChainReply.class);
-                    System.out.println("Done!");
+//                    System.out.println("Done!");
                     if (reply == null) throw new Exception();
                 }
                 catch (Exception ex)
@@ -188,7 +188,7 @@ public class MessageTest extends NodeTest
 
             BroadcastRequest request = new BroadcastRequest(chain_id,
                     request_type, block);
-            System.out.println("Broadcast Request:  "+request.getChainId()+" "+request.getRequestType()+" "+request.getBlock());
+//            System.out.println("Broadcast Request:  "+request.getChainId()+" "+request.getRequestType()+" "+request.getBlock());
             for (int i = 0; i < nodes.size(); i++) {
                 int port = nodes.get(i);
                 String uri = HOST_URI + port + BROADCAST_URI;
