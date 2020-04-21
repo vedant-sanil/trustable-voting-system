@@ -48,10 +48,10 @@ public class ConformanceTests
         if (testname.equals("checkpoint"))
         {
             tests = new Class[] {
-//                test.blockchain.MessageTest.class,
+                test.blockchain.MessageTest.class,
                 test.blockchain.MiningTest.class,
-//                test.blockchain.ConsensusTest.class,
-//                test.blockchain.SpeedTest.class,
+                test.blockchain.ConsensusTest.class,
+                test.blockchain.SpeedTest.class,
             };
         }
         else if (testname.equals("speed"))

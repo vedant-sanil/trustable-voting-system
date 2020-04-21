@@ -55,7 +55,6 @@ public class MiningTest extends NodeTest
             String hash = "";
 
             GetChainRequest request = new GetChainRequest(chain_id);
-
             for (int i = 0; i < nodes.size(); i++) {
                 String uri = HOST_URI + nodes.get(i) + GET_CHAIN_URI;
                 GetChainReply reply;
@@ -79,10 +78,6 @@ public class MiningTest extends NodeTest
 
                 Block block = reply.getBlocks().get(0);
                 String cur_hash = block.getHash();
-                System.out.println("Block ID is "+block.getId());
-                System.out.println("genesis block is "+block.toString());
-                System.out.println("Hash from Block Reply is "+cur_hash);
-                System.out.println("Hash from code is "+hash);
                 if (hash.isEmpty())
                 {
                     hash = cur_hash;
@@ -292,7 +287,6 @@ public class MiningTest extends NodeTest
                 throw new TestFailed("GetBlockChain failed: " +
                         "No response or incorrect format.");
             }
-            System.out.println("checkChainLength - Port number "+port);
             if (reply.getChainLength() != target_length)
             {
                 throw new TestFailed("Error: Incorrect chain length, " +
@@ -332,8 +326,6 @@ public class MiningTest extends NodeTest
                 throw new TestFailed("GetBlockChain failed: " +
                         "No response or incorrect format.");
             }
-            System.out.println("checkChainData - Port number "+port);
-            System.out.println("checkChainData - Block "+reply.blocks);
             if (reply.getChainLength() != target_length)
             {
                 throw new TestFailed("Error: Incorrect chain length, " +

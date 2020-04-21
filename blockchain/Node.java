@@ -30,25 +30,31 @@ public class Node {
     public List<Block> blockchain = new ArrayList<Block>();
     public List<Block> votechain = new ArrayList<Block>();
     /** Genesis Block */
-    public Map<String, String> test1 = Map.of(
-            "public_key", "xxx",
-            "user_name", "xxx"
-            );
-    public Map<String, String> test2 = Map.of(
-            "vote", "xxx",
-            "voter_credential", "xxx"
-    );
-    public long nonce = 0;
-    public Block genesisBlockTest = new Block(0, test1,Long.parseLong("5415419034"),nonce,"xxx","xxx");
-    public Block genesisBlockVoteTest = new Block(0, test2,Long.parseLong("5415419034"),0,"xxx","xxx");
-    String hash = Block.computeHash(genesisBlockTest);
-    String hashVote = Block.computeHash(genesisBlockVoteTest);
-    public Block genesisBlock = new Block(0, test1,Long.parseLong("5415419034"),nonce,"xxx",hash);
-    public Block genesisBlockVote = new Block(0, test2,Long.parseLong("5415419034"),nonce,"xxx",hash);
+    public Map<String, String> test1 = new LinkedHashMap<String,String>();
+    public Map<String, String> test2 = new LinkedHashMap<String,String>();
+
+
+
+    public long nonce;
+    public Block genesisBlockTest, genesisBlockVoteTest, genesisBlock, genesisBlockVote;
+
     /** Flag to check if node is asleep or not */
     public boolean isSleep = false;
 
     public Node(int NODENUM, String args) throws IOException{
+        this.test1.put("public_key", "xxx");
+        this.test1.put("user_name", "xxx");
+        this.test2.put("vote", "xxx");
+        this.test2.put("voter_credential", "xxx");
+        this.nonce = 0;
+        this.genesisBlockTest = new Block(0, test1,Long.parseLong("5415419034"),nonce,"xxx","xxx");
+        this.genesisBlockVoteTest = new Block(0, test2,Long.parseLong("5415419034"),nonce,"xxx","xxx");
+        String hash = Block.computeHash(genesisBlockTest);
+        String hashVote = Block.computeHash(genesisBlockVoteTest);
+        this.genesisBlock = new Block(0, test1,Long.parseLong("5415419034"),nonce,"xxx",hash);
+        this.genesisBlockVote = new Block(0, test2,Long.parseLong("5415419034"),nonce,"xxx",hashVote);
+
+
         // For each port
         String[] port_list = args.split(",");
         this.node_num = NODENUM;
@@ -62,6 +68,7 @@ public class Node {
             Integer port = Integer.parseInt(arg);
             this.ports.add(port);
         }
+        System.out.println("List of ports are "+this.ports);
         System.out.println("Port on which it needs to be created - "+this.ports.get(NODENUM));
         temp_skeleton = HttpServer.create(new java.net.InetSocketAddress(this.ports.get(NODENUM)), 0);
         temp_skeleton.setExecutor(Executors.newCachedThreadPool());
@@ -112,21 +119,20 @@ public class Node {
                 try {
                     InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
                     getChainRequest = gson.fromJson(isr, GetChainRequest.class);
-//                    System.out.println("Coming into getchain: Value is");
-//                    System.out.println(getChainRequest.chain_id);
                     if (getChainRequest.getChainId() == 1)
                     {
                         getChainReply = new GetChainReply(getChainRequest.getChainId(), this.blockchain.size(), this.blockchain);
                         System.out.println("getChainReply Size of Blockchain : "+this.blockchain.size());
+                        System.out.println("getChainReply Blockchain : "+this.blockchain);
                     }
                     else
                     {
                         getChainReply = new GetChainReply(getChainRequest.getChainId(), this.votechain.size(), this.votechain);
                         System.out.println("getChainReply Size of Votechain : "+this.votechain.size());
+                        System.out.println("getChainReply Blockchain : "+this.votechain);
                     }
                     jsonString = gson.toJson(getChainReply);
                     returnCode = 200;
-//                    System.out.println("JSON String: "+jsonString);
                 } catch (Exception e) {
                     returnCode = 404;
                     jsonString="Request information is incorrect";
@@ -192,18 +198,18 @@ public class Node {
                 BlockReply blockReply = null;
                 try {
                     Block init_block = null;
-                    // Synchronize the blockcain before mining
-                    this.synchronize();
                     InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
                     mineBlockRequest = gson.fromJson(isr, MineBlockRequest.class);
-                    String prev_hash = this.blockchain.get(this.blockchain.size()-1).getHash();
+                    // Synchronize the chain before mining
+                    this.synchronize(mineBlockRequest.getChainId());
 
                     // Get time, increment nonce and add init block
                     long curr_time = System.currentTimeMillis();
                     // Get current hash by mining through difficulty 5
                     String mined_hash = "xxx";
+                    String prev_hash = "xxx";
                     if (mineBlockRequest.getChainId() == 1) {
-
+                        prev_hash = this.blockchain.get(this.blockchain.size()-1).getHash();
                         while (!mined_hash.startsWith("00000")) {
                             nonce++;
                             // Create temporary new block
@@ -213,6 +219,7 @@ public class Node {
                         }
                         System.out.println("Mined Hash == "+mined_hash);
                     } else {
+                        prev_hash = this.votechain.get(this.votechain.size()-1).getHash();
                         while (!mined_hash.startsWith("0")) {
                             nonce++;
                             // Create temporary new block
@@ -262,7 +269,7 @@ public class Node {
                     System.out.println(addBlockRequest.getChainId());
                     System.out.println("Coming into addblock: Block is");
                     System.out.println(addBlockRequest.getBlock().toString());
-                    this.synchronize();
+                    this.synchronize(addBlockRequest.getChainId());
                     resmap.put("info", "");
                     BroadcastRequest reqToSend = new BroadcastRequest(addBlockRequest.getChainId(), "PRECOMMIT", addBlockRequest.getBlock());
                     HttpResponse<String> response = null;
@@ -286,9 +293,7 @@ public class Node {
                             resmap.put("success", "true");
                             for (int i = 0; i < this.ports.size(); i++)
                             {
-                                if (i != this.node_num) {
                                     response = this.getResponse("/broadcast", this.ports.get(i), reqToSend);
-                                }
                             }
                             returnCode = 200;
                         } else {
@@ -338,7 +343,7 @@ public class Node {
                     System.out.println(getBroadcastRequest.request_type);
                     System.out.println("Coming into broadcastblock: Block is");
                     System.out.println(getBroadcastRequest.block.toString());
-                    this.synchronize();
+                    this.synchronize(getBroadcastRequest.getChainId());
                     resmap.put("info", "");
                     if (getBroadcastRequest.request_type.equals("PRECOMMIT"))
                     {
@@ -382,6 +387,7 @@ public class Node {
                         } else if (getBroadcastRequest.getChainId() == 2 && !votechain.get(votechain.size() - 1).getHash().equals(getBroadcastRequest.block.getHash())){
                             votechain.add(getBroadcastRequest.block);
                         }
+//                        this.synchronize(getBroadcastRequest.getChainId());
                         resmap.put("success", "true");
                         returnCode = 200;
                     }
@@ -408,7 +414,7 @@ public class Node {
         }));
     }
 
-    private void synchronize() {
+    private void synchronize(int chain_id) {
         System.out.println("++++++++++++++SYNC BLOCKCHAIN+++++++++++++++++");
         for (int port_num : this.ports) {
             if (port_num != this.ports.get(this.node_num)) {
@@ -419,66 +425,61 @@ public class Node {
                     GetChainReply message = gson.fromJson(response.body(), GetChainReply.class);
                     List<Block> other_chain = new ArrayList<Block>();
 
-                    // Synchronizing Block Chain
-                    System.out.println("SYNCHRONIZING BLOCKCHAIN");
-                    if (this.blockchain.size() <= message.getChainLength()) {
-                        if (this.blockchain.size() == message.getChainLength())
-                        {
-                            other_chain = message.getBlocks();
-                            for (int i = 0; i < this.blockchain.size(); i++) {
-                                if (this.blockchain.get(i).getTimestamp() < other_chain.get(i).getTimestamp())
-                                {
-                                    for (int j = 0; j < message.getBlocks().size(); j++)
-                                        this.blockchain.set(j, message.getBlocks().get(j));
-                                    break;
+                    if (chain_id == 1) {
+                        // Synchronizing Block Chain
+                        System.out.println("SYNCHRONIZING BLOCKCHAIN");
+                        if (this.blockchain.size() <= message.getChainLength()) {
+                            if (this.blockchain.size() == message.getChainLength()) {
+                                other_chain = message.getBlocks();
+                                for (int i = 0; i < this.blockchain.size(); i++) {
+                                    if (this.blockchain.get(i).getTimestamp() < other_chain.get(i).getTimestamp()) {
+                                        for (int j = 0; j < message.getBlocks().size(); j++)
+                                            this.blockchain.set(j, message.getBlocks().get(j));
+                                        break;
+                                    }
+                                    System.out.println("Block " + i + " - " + blockchain.get(i).toString());
+                                    System.out.println("Block " + i + " CurrentHash - " + blockchain.get(i).getHash());
                                 }
-                                System.out.println("Block "+i+" - "+ blockchain.get(i).toString());
-                                System.out.println("Block "+i+" CurrentHash - "+ blockchain.get(i).getHash());
+                            } else {
+                                System.out.println(port_num + " - Current blockchain not up-to-date, re-update");
+                                System.out.println("");
+                                this.blockchain = message.getBlocks();
                             }
-                        } else {
-                            System.out.println(port_num + " - Current blockchain not up-to-date, re-update");
-                            System.out.println("");
-                            this.blockchain = message.getBlocks();
+                        }
+                    } else {
+                        // Synchronizing Vote Chain
+                        request = new GetChainRequest(2);
+                        response = this.getResponse("/getchain", port_num, request);
+                        message = gson.fromJson(response.body(), GetChainReply.class);
+                        other_chain = new ArrayList<Block>();
+                        System.out.println("SYNCHRONIZING VOTECHAIN");
+                        if (this.votechain.size() <= message.getChainLength()) {
+                            if (this.votechain.size() == message.getChainLength())
+                            {
+                                other_chain = message.getBlocks();
+                                for (int i = 0; i < this.votechain.size(); i++) {
+                                    if (this.votechain.get(i).getTimestamp() < other_chain.get(i).getTimestamp())
+                                    {
+                                        for (int j = 0; j < message.getBlocks().size(); j++)
+                                            this.votechain.set(j, message.getBlocks().get(j));
+                                        break;
+                                    }
+                                    System.out.println("Block "+i+" - "+ votechain.get(i).toString());
+                                    System.out.println("Block "+i+" CurrentHash - "+ votechain.get(i).getHash());
+                                }
+                            } else {
+                                System.out.println(port_num + " - Current votechain not up-to-date, re-update");
+                                System.out.println("");
+                                this.votechain = message.getBlocks();
+                            }
                         }
                     }
-
-
-                    // Synchronizing Vote Chain
-                    request = new GetChainRequest(2);
-                    response = this.getResponse("/getchain", port_num, request);
-                    message = gson.fromJson(response.body(), GetChainReply.class);
-                    other_chain = new ArrayList<Block>();
-                    System.out.println("SYNCHRONIZING VOTECHAIN");
-                    if (this.votechain.size() <= message.getChainLength()) {
-                        if (this.votechain.size() == message.getChainLength())
-                        {
-                            other_chain = message.getBlocks();
-                            for (int i = 0; i < this.votechain.size(); i++) {
-                                if (this.votechain.get(i).getTimestamp() < other_chain.get(i).getTimestamp())
-                                {
-                                    for (int j = 0; j < message.getBlocks().size(); j++)
-                                        this.votechain.set(j, message.getBlocks().get(j));
-                                    break;
-                                }
-                                System.out.println("Block "+i+" - "+ votechain.get(i).toString());
-                                System.out.println("Block "+i+" CurrentHash - "+ votechain.get(i).getHash());
-                            }
-                        } else {
-                            System.out.println(port_num + " - Current votechain not up-to-date, re-update");
-                            System.out.println("");
-                            this.votechain = message.getBlocks();
-//                            for (int j = 0; j < message.getBlocks().size(); j++)
-//                                this.votechain.add(message.getBlocks().get(j));
-                        }
-                    }
-
-
-//                    System.out.println("Blockchain value is "+this.blockchain);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+        System.out.println("++++++++++++++END SYNC BLOCKCHAIN+++++++++++++++++");
     }
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
