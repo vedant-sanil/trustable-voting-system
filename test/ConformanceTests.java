@@ -49,8 +49,8 @@ public class ConformanceTests
         {
             tests = new Class[] {
 //                test.blockchain.MessageTest.class,
-//                test.blockchain.MiningTest.class,
-                test.blockchain.ConsensusTest.class,
+                test.blockchain.MiningTest.class,
+//                test.blockchain.ConsensusTest.class,
 //                test.blockchain.SpeedTest.class,
             };
         }

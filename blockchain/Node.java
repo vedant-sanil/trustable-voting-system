@@ -408,7 +408,7 @@ public class Node {
         }));
     }
 
-    private synchronized void synchronize() {
+    private void synchronize() {
         System.out.println("++++++++++++++SYNC BLOCKCHAIN+++++++++++++++++");
         for (int port_num : this.ports) {
             if (port_num != this.ports.get(this.node_num)) {
