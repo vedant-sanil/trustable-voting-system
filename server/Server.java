@@ -45,17 +45,15 @@ public class Server {
         // Assign a user name to this node
         user_name = "Server_"+this.server_port;
 
+        // Initialize Gson object
         this.gson = new Gson();
 
-        // Register votes
+        // Register Server to blockchain
         this.register();
 
         // Create the server and node communication servers
         this.server_skeleton = HttpServer.create(new InetSocketAddress(this.server_port), 0);
         this.server_skeleton.setExecutor(Executors.newCachedThreadPool());
-
-        //this.node_skeleton = HttpServer.create(new InetSocketAddress(this.node_port), 0);
-        //this.node_skeleton.setExecutor(Executors.newCachedThreadPool());
     }
 
     /** Start the voting server */
@@ -66,7 +64,6 @@ public class Server {
     /** Stop the voting server */
     void stop() {
         this.server_skeleton.stop(0);
-        //this.node_skeleton.stop(0);
     }
 
     /** Method to start skeletons */
@@ -75,9 +72,6 @@ public class Server {
 
         this.server_api();
         this.server_skeleton.start();
-
-        //this.server_node_api();
-        //this.node_skeleton.start();
 
         this.skeleton_started = true;
     }
