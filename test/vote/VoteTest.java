@@ -110,6 +110,7 @@ abstract class VoteTest extends Test
             try
             {
                 socket = new Socket();
+                System.out.println("Port : " + port);
                 socket.connect(new InetSocketAddress(HOST_NAME, port));
                 break;
             }

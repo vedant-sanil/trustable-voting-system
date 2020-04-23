@@ -483,7 +483,6 @@ public class Node {
     }
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        Random rand = new Random();
         File file = new File("./Blockchain" + args[0] + ".output");
         PrintStream stream = new PrintStream(file);
         System.setOut(stream);
