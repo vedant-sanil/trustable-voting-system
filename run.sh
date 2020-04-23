@@ -1,4 +1,4 @@
 rm Blockchain*
-rm Serverfiles*
-rm Clientfiles*
+rm Serverfile*
+rm Clientfile*
 make test

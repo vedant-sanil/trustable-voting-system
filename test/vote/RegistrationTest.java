@@ -53,6 +53,8 @@ public class RegistrationTest extends VoteTest
 
         List<Block> blocks = getBlockchain(KEYCHAIN_ID);
 
+        System.out.println("Blockchain size : " + blocks.size());
+
         if (blocks.size() < client_ports.size() + 2)
         {
             throw new TestFailed("AddPublicKey failed: " +
