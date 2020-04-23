@@ -213,7 +213,7 @@ abstract class VoteTest extends Test
 
             if(server != null)
             {
-                server.destroy();
+                kill(server.toHandle());
 
                 try
                 {
@@ -229,7 +229,7 @@ abstract class VoteTest extends Test
 
         // Destroy the authority server
         if (server_process != null) {
-            server_process.destroy();
+            kill(server_process.toHandle());
             try
             {
                 server_process.waitFor();
@@ -243,7 +243,7 @@ abstract class VoteTest extends Test
 
             if(server != null)
             {
-                server.destroy();
+                kill(server.toHandle());
 
                 try
                 {
@@ -256,6 +256,11 @@ abstract class VoteTest extends Test
         }
 
         client_processes = new ArrayList<>();
+    }
+
+    protected void kill(ProcessHandle handle) {
+        handle.descendants().forEach(this::kill);
+        handle.destroy();
     }
 
 

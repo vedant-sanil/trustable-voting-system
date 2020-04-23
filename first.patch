@@ -1,0 +1,114 @@
+diff --git a/lib/MessageSender.java b/lib/MessageSender.java
+index f6c9f05..d9ab9fb 100644
+--- a/lib/MessageSender.java
++++ b/lib/MessageSender.java
+@@ -40,14 +40,10 @@ public class MessageSender {
+ 
+     private int connection_timeout = 10;
+ 
+-    private HttpClient client;
+-
+     /**
+      * Default constructor
+      */
+-    public MessageSender() {
+-        client = HttpClient.newHttpClient();
+-    }
++    public MessageSender() {}
+ 
+     /**
+      * Constructor with a specified timeout
+@@ -56,7 +52,6 @@ public class MessageSender {
+      */
+     public MessageSender(int timeout)
+     {
+-        client = HttpClient.newHttpClient();
+         connection_timeout = timeout;
+     }
+ 
+@@ -84,7 +79,7 @@ public class MessageSender {
+                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                 .build();
+ 
+-        HttpResponse<String> response = client.send(request,
++        HttpResponse<String> response = HttpClient.newHttpClient().send(request,
+                 HttpResponse.BodyHandlers.ofString());
+         String responseBody = response.body();
+         return gson.fromJson(responseBody, classOfReplyT);
+@@ -111,7 +106,7 @@ public class MessageSender {
+                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                 .build();
+ 
+-        HttpResponse<String> response = client.send(request,
++        HttpResponse<String> response = HttpClient.newHttpClient().send(request,
+                 HttpResponse.BodyHandlers.ofString());
+         String responseBody = response.body();
+         return gson.fromJson(responseBody, classOfReplyT);
+diff --git a/test/blockchain/NodeTest.java b/test/blockchain/NodeTest.java
+index 857644d..c7e7b1f 100644
+--- a/test/blockchain/NodeTest.java
++++ b/test/blockchain/NodeTest.java
+@@ -144,7 +144,7 @@ abstract class NodeTest extends Test
+ 
+             if(server != null)
+             {
+-                server.destroy();
++                kill(server.toHandle());
+ 
+                 try
+                 {
+@@ -159,6 +159,11 @@ abstract class NodeTest extends Test
+         servers = new ArrayList<>();
+     }
+ 
++    protected void kill(ProcessHandle handle) {
++        handle.descendants().forEach(this::kill);
++        handle.destroy();
++    }
++
+ 
+     /**
+      *      Creates a mine block request and sends it to different blockchain
+diff --git a/test/vote/VoteTest.java b/test/vote/VoteTest.java
+index bce7490..774ee50 100644
+--- a/test/vote/VoteTest.java
++++ b/test/vote/VoteTest.java
+@@ -213,7 +213,7 @@ abstract class VoteTest extends Test
+ 
+             if(server != null)
+             {
+-                server.destroy();
++                kill(server.toHandle());
+ 
+                 try
+                 {
+@@ -229,7 +229,7 @@ abstract class VoteTest extends Test
+ 
+         // Destroy the authority server
+         if (server_process != null) {
+-            server_process.destroy();
++            kill(server_process.toHandle());
+             try
+             {
+                 server_process.waitFor();
+@@ -243,7 +243,7 @@ abstract class VoteTest extends Test
+ 
+             if(server != null)
+             {
+-                server.destroy();
++                kill(server.toHandle());
+ 
+                 try
+                 {
+@@ -258,6 +258,11 @@ abstract class VoteTest extends Test
+         client_processes = new ArrayList<>();
+     }
+ 
++    protected void kill(ProcessHandle handle) {
++        handle.descendants().forEach(this::kill);
++        handle.destroy();
++    }
++
+ 
+     /**
+      *      Gets the list of blocks present in the public key and voting

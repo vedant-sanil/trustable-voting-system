@@ -40,14 +40,10 @@ public class MessageSender {
 
     private int connection_timeout = 10;
 
-    private HttpClient client;
-
     /**
      * Default constructor
      */
-    public MessageSender() {
-        client = HttpClient.newHttpClient();
-    }
+    public MessageSender() {}
 
     /**
      * Constructor with a specified timeout
@@ -56,7 +52,6 @@ public class MessageSender {
      */
     public MessageSender(int timeout)
     {
-        client = HttpClient.newHttpClient();
         connection_timeout = timeout;
     }
 
@@ -84,7 +79,7 @@ public class MessageSender {
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
-        HttpResponse<String> response = client.send(request,
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request,
                 HttpResponse.BodyHandlers.ofString());
         String responseBody = response.body();
         return gson.fromJson(responseBody, classOfReplyT);
@@ -111,7 +106,7 @@ public class MessageSender {
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
-        HttpResponse<String> response = client.send(request,
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request,
                 HttpResponse.BodyHandlers.ofString());
         String responseBody = response.body();
         return gson.fromJson(responseBody, classOfReplyT);
