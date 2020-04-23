@@ -3,12 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="1cee57b7-1c37-4c2e-a716-46557f203edc" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/client/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/ConformanceTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/ConformanceTests.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/vote/RegistrationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/vote/RegistrationTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/vote/VoteTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/vote/VoteTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

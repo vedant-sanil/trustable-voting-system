@@ -101,7 +101,7 @@ public class Server {
 
         // Generate public-private key pair
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-        kpg.initialize(512);
+        kpg.initialize(2048);
         KeyPair keys = kpg.generateKeyPair();
         String publicKey = new String(keys.getPublic().getEncoded());
         String privateKey = new String(keys.getPrivate().getEncoded());

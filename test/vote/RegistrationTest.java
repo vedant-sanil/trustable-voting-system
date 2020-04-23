@@ -67,6 +67,8 @@ public class RegistrationTest extends VoteTest
         {
             Block block = blocks.get(i);
 
+            System.out.println(block.toString());
+
             String pubKey = block.getData().getOrDefault("public_key", "");
             String userName = block.getData().getOrDefault("user_name", "");
 
