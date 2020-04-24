@@ -36,8 +36,8 @@ public class ConformanceTests
                 //test.blockchain.MiningTest.class,
                 //test.blockchain.ConsensusTest.class,
                 //test.blockchain.SpeedTest.class,
-                test.vote.RegistrationTest.class,
-                //test.vote.CandidacyTest.class,
+                //test.vote.RegistrationTest.class,
+                test.vote.CandidacyTest.class,
                 //test.vote.CastVoteTest.class,
                 //test.vote.CountVoteTest.class,
         };

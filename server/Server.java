@@ -29,14 +29,14 @@ public class Server {
     private int server_port;
     /** HttpServer skeleton that perfroms the requisite communication*/
     private HttpServer server_skeleton;
-    /** HttpServer skeleton that perfroms the requisite communication*/
-    private HttpServer node_skeleton;
     /** Check if skeleton has started */
     private boolean skeleton_started = false;
     /** Gson object which can parse json to an object */
     protected Gson gson;
     /** Data creation for registration */
     public Map<String, String> data = new LinkedHashMap<String, String>();
+    /** List of eligible candidates */
+    List<String> candidate_names;
 
     public Server(int server_port, int node_port) throws IOException, NoSuchAlgorithmException, InterruptedException {
         this.server_port = server_port;
@@ -45,8 +45,9 @@ public class Server {
         // Assign a user name to this node
         user_name = "Server_"+this.server_port;
 
-        // Initialize Gson object
+        // Initialize objects
         this.gson = new Gson();
+        this.candidate_names = new ArrayList<String>();
 
         // Register Server to blockchain
         this.register();
@@ -78,12 +79,97 @@ public class Server {
 
     /** Wrapper method over all the Server APIs */
     private void server_api() {
-        return;
+        this.becomeCandidates();
+        this.getCandidates();
     }
 
-    /** Wrapper method over all the Server-Node APIs */
-    private void server_node_api() {
-        return;
+    /**
+     * Function to check and add a client as candidate
+     */
+    private void becomeCandidates() {
+        this.server_skeleton.createContext("/becomecandidate", (exchange -> {
+            System.out.println("=========BECOME CANDIDATES========");
+            String jsonString = "";
+            BecomeCandidateRequest becomeCandidateRequest = null;
+            StatusReply statusReply = null;
+            int returnCode = 0;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                returnCode = 200;
+                InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
+                becomeCandidateRequest = gson.fromJson(isr, BecomeCandidateRequest.class);
+
+                // Get Candidate details
+                String candidateName = becomeCandidateRequest.getCandidateName();
+
+                if (this.candidate_names.contains(candidateName)) {
+                    // Candidate already exists
+                    returnCode = 409;
+                    boolean success = false;
+                    String info = "NodeAlreadyCandidate";
+                    statusReply = new StatusReply(success, info);
+                    jsonString = gson.toJson(statusReply);
+                } else {
+                    try {
+                        boolean found = false;
+                        GetChainRequest request = new GetChainRequest(1);
+                        HttpResponse<String> response = this.getResponse("/getchain", this.node_port, request);
+                        GetChainReply getChainReply = gson.fromJson(response.body(), GetChainReply.class);
+
+                        // Get blocks in the blockchain and check if public key of candidate is registered
+                        List<Block> blocks = getChainReply.getBlocks();
+
+                        for (Block block : blocks) {
+                            Map<String, String> data = block.getData();
+                            if (data.get("user_name").equals(candidateName)) {
+                                found = true;
+                            }
+                        }
+
+                        // If not found, return error else add client to candidate list
+                        if (!found) {
+                            returnCode = 422;
+                            boolean success = false;
+                            String info = "CandidatePublicKeyUnknown";
+                            statusReply = new StatusReply(success, info);
+                            jsonString = gson.toJson(statusReply);
+                        } else {
+                            returnCode = 200;
+                            boolean success = true;
+                            String info = "ClientSuccessfullyAddedAsCandidate";
+                            statusReply = new StatusReply(success, info);
+                            jsonString = gson.toJson(statusReply);
+                            this.candidate_names.add(candidateName);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                jsonString = "The REST method should be POST for <getCandidates>!\n";
+                returnCode = 400;
+            }
+            this.generateResponseAndClose(exchange, jsonString, returnCode);
+        }));
+    }
+
+    /**
+     * Function to obtain a list of all eligible candidates
+     */
+    private void getCandidates() {
+        this.server_skeleton.createContext("/getcandidates", (exchange -> {
+            System.out.println("=========GET CANDIDATES========");
+            String jsonString = "";
+            int returnCode = 0;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                returnCode = 200;
+                GetCandidatesReply getCandidatesReply = new GetCandidatesReply(this.candidate_names);
+                jsonString = gson.toJson(getCandidatesReply);
+            } else {
+                jsonString = "The REST method should be POST for <getCandidates>!\n";
+                returnCode = 400;
+            }
+            this.generateResponseAndClose(exchange, jsonString, returnCode);
+        }));
     }
 
     /**
@@ -168,5 +254,21 @@ public class Server {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Function to generate a response based on a json string, Http exchange object and a return code
+     * @param exchange
+     * @param respText : response text
+     * @param returnCode
+     * @throws IOException
+     */
+    private void generateResponseAndClose(HttpExchange exchange, String respText, int returnCode) throws IOException {
+        exchange.sendResponseHeaders(returnCode, respText.getBytes().length);
+        OutputStream output = exchange.getResponseBody();
+        output.write(respText.getBytes());
+        output.flush();
+        exchange.close();
+        System.out.println("++++++++++++++++++++++++++++++++");
     }
 }
