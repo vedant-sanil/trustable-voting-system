@@ -27,7 +27,7 @@ package test;
 public class Config {
 
     /* Ports of blockchain nodes */
-    public static final int[] node_ports = {7551, 7552, 7553, 7554};
+    public static final int[] node_ports = {7771, 7772, 7773, 7774};
 
     /* Port of voting authority server */
     public static final int server_port = 8000;

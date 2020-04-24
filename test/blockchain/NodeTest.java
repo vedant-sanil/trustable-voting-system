@@ -41,12 +41,12 @@ abstract class NodeTest extends Test
 
     protected static final int BROADCAST_TIMEOUT_MS = 5000;
     protected static final int SLEEP_TIMEOUT = 30;
-    protected static final int CLIENT_TIMEOUT = 30;
+    protected static final int CLIENT_TIMEOUT = 10;
 
     protected static final int KEYCHAIN_ID = 1;
     protected static final int VOTECHAIN_ID = 2;
     protected static final int[] CHAIN_IDS = {KEYCHAIN_ID, VOTECHAIN_ID};
-    protected static String[] CHAIN_PROOFS;
+    protected static final String[] CHAIN_PROOFS = {"00000", ""};
     protected static final String[] BROADCAST_TYPES = {"PRECOMMIT", "COMMIT"};
 
     private List<Process> servers = new ArrayList<>();
@@ -54,22 +54,6 @@ abstract class NodeTest extends Test
     protected MessageSender client = new MessageSender(CLIENT_TIMEOUT);
 
     abstract protected void perform() throws TestFailed;
-
-
-    /**
-     * Constructor of the test
-     */
-    protected NodeTest()
-    {
-        if (Config.node_config.startsWith("python"))
-        {
-            CHAIN_PROOFS = new String[]{"000", ""};
-        }
-        else
-        {
-            CHAIN_PROOFS = new String[]{"00000", ""};
-        }
-    }
 
 
     /**
@@ -107,14 +91,11 @@ abstract class NodeTest extends Test
         String configs[] = Config.getNodeConfigs();
         try
         {
-            System.out.println("\n--------------------");
             for (int i = 0; i < configs.length; i++) {
                 String cmd = configs[i];
-                System.out.println("Cmd "+i+" is : "+cmd);
                 Process server = spawnProcess(cmd);
                 servers.add(server);
             }
-            System.out.println("--------------------");
         }
         catch (Throwable t)
         {
@@ -163,7 +144,7 @@ abstract class NodeTest extends Test
 
             if(server != null)
             {
-                kill(server.toHandle());
+                server.destroy();
 
                 try
                 {
@@ -176,11 +157,6 @@ abstract class NodeTest extends Test
         }
 
         servers = new ArrayList<>();
-    }
-
-    protected void kill(ProcessHandle handle) {
-        handle.descendants().forEach(this::kill);
-        handle.destroy();
     }
 
 
