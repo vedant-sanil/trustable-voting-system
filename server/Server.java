@@ -96,6 +96,7 @@ public class Server {
      * Method to cast votes for a candidate
      */
     private void castVote() {
+        System.out.println("=========CAST VOTES REGISTERED========");
         this.server_skeleton.createContext("/castvote", (exchange -> {
             System.out.println("=========CAST VOTES========");
             String jsonString = "";
@@ -121,6 +122,7 @@ public class Server {
             }
             this.generateResponseAndClose(exchange, jsonString, returnCode);
         }));
+        System.out.println("=========CAST VOTES REGISTERED  END========");
     }
 
     /**

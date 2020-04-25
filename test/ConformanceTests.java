@@ -39,7 +39,7 @@ public class ConformanceTests
                 //test.vote.RegistrationTest.class,
                 //test.vote.CandidacyTest.class,
                 test.vote.CastVoteTest.class,
-                test.vote.CountVoteTest.class,
+//                test.vote.CountVoteTest.class,
         };
 
 

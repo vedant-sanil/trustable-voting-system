@@ -115,7 +115,7 @@ public class CastVoteTest extends VoteTest
         String s = null;
 
         try {
-            Process p = Runtime.getRuntime().exec("ps -ef");
+            Process p = Runtime.getRuntime().exec("ps -ef | grep \"java\"");
 
             BufferedReader stdInput = new BufferedReader(new
                     InputStreamReader(p.getInputStream()));
