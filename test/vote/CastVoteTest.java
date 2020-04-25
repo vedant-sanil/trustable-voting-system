@@ -22,6 +22,10 @@
 
 package test.vote;
 
+import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +59,7 @@ public class CastVoteTest extends VoteTest
 
         // Perform the CastVote tests
         testMalformedVote();
+        System.out.println("Malformed test done!");
         testCorrectAndFakeVotes();
     }
 
@@ -106,8 +111,37 @@ public class CastVoteTest extends VoteTest
         CastVoteRequest castVoteRequest = new CastVoteRequest(incorrect_vote, incorrect_vote);
 
         StatusReply statusReply;
+
+        String s = null;
+
+        try {
+            Process p = Runtime.getRuntime().exec("ps -ef");
+
+            BufferedReader stdInput = new BufferedReader(new
+                    InputStreamReader(p.getInputStream()));
+
+            BufferedReader stdError = new BufferedReader(new
+                    InputStreamReader(p.getErrorStream()));
+
+            // read the output from the command
+            System.out.println("Here is the standard output of the command:\n");
+            while ((s = stdInput.readLine()) != null) {
+                System.out.println(s);
+            }
+
+            // read any errors from the attempted command
+            System.out.println("Here is the standard error of the command (if any):\n");
+            while ((s = stdError.readLine()) != null) {
+                System.out.println(s);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         try
         {
+            System.out.println(requestURI);
             statusReply = sender.post(requestURI, castVoteRequest,
                     StatusReply.class);
             if (statusReply == null) throw new Exception();

@@ -17,7 +17,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import message.*;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 public class Client {
+    /** Public key */
+    private String publicKey;
+    /** Private key */
+    private String privateKey;
     /** User name of current node */
     private String user_name;
     /** Port number of blockchain node*/
@@ -36,6 +44,8 @@ public class Client {
     protected Gson gson;
     /** Data creation for registration */
     public Map<String, String> data = new LinkedHashMap<String, String>();
+    /** Data creation for vote */
+    public Map<String, String> vote = new LinkedHashMap<String, String>();
 
     public Client(int client_port, int server_port, int node_port) throws IOException, NoSuchAlgorithmException, InterruptedException{
         this.client_port = client_port;
@@ -43,7 +53,7 @@ public class Client {
         this.server_port = server_port;
 
         // Assign a user name to this node
-        user_name = "Client_"+this.client_port;
+        this.user_name = "Client_"+this.client_port;
 
         // Initialize Gson object
         this.gson = new Gson();
@@ -97,12 +107,12 @@ public class Client {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(2048);
         KeyPair keys = kpg.generateKeyPair();
-        String publicKey = new String(keys.getPublic().getEncoded());
-        String privateKey = new String(keys.getPrivate().getEncoded());
+        this.publicKey = new String(keys.getPublic().getEncoded(), "UTF-8");
+        this.privateKey = new String(keys.getPrivate().getEncoded(), "UTF-8");
 
         // Create data block
-        this.data.put("public_key", publicKey);
-        this.data.put("user_name", privateKey);
+        this.data.put("public_key", this.publicKey);
+        this.data.put("user_name", this.user_name);
 
         // Mine a new block
         MineBlockRequest request = new MineBlockRequest(chain_id, this.data);
@@ -168,5 +178,53 @@ public class Client {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Method to encrypt a string using AES 128
+     * @param string to be encrypted
+     * @return encrypted string
+     * Encryption help taken from: https://www.includehelp.com/java-programs/encrypt-decrypt-string-using-aes-128-bits-encryption-algorithm.aspx
+     */
+    private String encrypt(String encrypt_str, String encrypt_key) {
+        String encrypted_str = "";
+        try {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKC5PADDING");
+            byte[] key = encrypt_key.getBytes("UTF-8");
+            SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(key);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
+            byte[] cipherText = cipher.doFinal(encrypt_str.getBytes("UTF-8"));
+            Base64.Encoder encoder = Base64.getEncoder();
+            encrypted_str = encoder.encodeToString(cipherText);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return encrypted_str;
+    }
+
+    /**
+     * Method to decrypt a string using AES 128
+     * @param string to be decrypted
+     * @return decrypted string
+     * Encryption help taken from: https://www.includehelp.com/java-programs/encrypt-decrypt-string-using-aes-128-bits-encryption-algorithm.aspx
+     */
+    private String decrypt(String decrypt_str, String decrypt_key) {
+        String decrypted_str = "";
+        try {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKC5PADDING");
+            byte[] key = decrypt_key.getBytes("UTF-8");
+            SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(key);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
+            Base64.Decoder decoder = Base64.getDecoder();
+            byte[] cipherText = decoder.decode(decrypt_key.getBytes("UTF-8"));
+            decrypted_str = new String(cipher.doFinal(), "UTF-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return decrypted_str;
     }
 }
