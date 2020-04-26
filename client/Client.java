@@ -164,6 +164,7 @@ public class Client {
                                 jsonString = gson.toJson(statusReply);
                             } else {
                                 // Encrypt aes session key with server's public key
+                                System.out.println("Server Public Key is "+ server_pubkey.getBytes("UTF-8"));
                                 PublicKey server_PublicKey = this.strToPubKey(server_pubkey);
                                 String encrypted_session_key = this.encrypt_rsa_pubkey(aes_encryption_key, server_PublicKey);
 
@@ -205,7 +206,7 @@ public class Client {
             }
             this.generateResponseAndClose(exchange, jsonString, returnCode);
         }));
-        System.out.println("=========CAST VOTES REGISTERED  END========");
+        System.out.println("=========START VOTES REGISTERED  END========");
     }
 
     /**
@@ -223,8 +224,10 @@ public class Client {
         KeyPair keys = kpg.generateKeyPair();
         this.publicKey = keys.getPublic();
         this.privateKey = keys.getPrivate();
-        pr_key = new String(this.privateKey.getEncoded(), "UTF-8");
-        pu_key = new String(this.publicKey.getEncoded(), "UTF-8");
+        pr_key = Base64.getEncoder().encodeToString(this.privateKey.getEncoded());
+        pu_key = Base64.getEncoder().encodeToString(this.publicKey.getEncoded());
+//        pr_key = new String(this.privateKey.getEncoded(), "UTF-8");
+//        pu_key = new String(this.publicKey.getEncoded(), "UTF-8");
 
         // Create data block
         this.data.put("public_key", pu_key);
@@ -304,10 +307,12 @@ public class Client {
     private PublicKey strToPubKey(String publicKey) {
         PublicKey pubKey1 = null;
         try {
-            byte[] publicBytes = publicKey.getBytes("UTF-8");
+//            byte[] publicBytes = publicKey.getBytes("UTF-8");
+            byte[] publicBytes = Base64.getDecoder().decode(publicKey);
             X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             pubKey1 = keyFactory.generatePublic(x509EncodedKeySpec);
+//            System.out.println("Public Key is : "+ pubKey1);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -328,6 +333,7 @@ public class Client {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.ENCRYPT_MODE, encrypt_key);
             encrypted_str = new String(cipher.doFinal(encrypt_str.getBytes("UTF-8")), "UTF-8");
+//            System.out.println("encrypt_rsa_privkey - Encrypted String is "+encrypted_str);
         } catch (Exception e) {
             e.printStackTrace();
             return "Failed";
@@ -352,6 +358,7 @@ public class Client {
             e.printStackTrace();
             return "Failed";
         }
+//        System.out.println("encrypt_rsa_pubkey - Encrypted String is "+encrypted_str);
         return encrypt_str;
     }
 
@@ -363,16 +370,20 @@ public class Client {
      */
     private String encrypt(String encrypt_str, String encrypt_key) {
         String encrypted_str = "";
+        MessageDigest sha = null;
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             byte[] key = encrypt_key.getBytes("UTF-8");
+            sha = MessageDigest.getInstance("SHA-1");
             SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
             IvParameterSpec ivParameterSpec = new IvParameterSpec(key);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
             byte[] cipherText = cipher.doFinal(encrypt_str.getBytes("UTF-8"));
             Base64.Encoder encoder = Base64.getEncoder();
             encrypted_str = encoder.encodeToString(cipherText);
+//            System.out.println("encrypt - Encrypted String is "+encrypted_str);
         } catch (Exception e) {
+            e.printStackTrace();
             return "Failed";
         }
         return encrypted_str;

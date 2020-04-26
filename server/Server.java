@@ -107,7 +107,6 @@ public class Server {
             boolean found = false;
 
             if ("POST".equals(exchange.getRequestMethod())) {
-                System.out.println("Here");
                 CastVoteRequest castVoteRequest = null;
                 try {
                     InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), "utf-8");
@@ -339,8 +338,10 @@ public class Server {
         KeyPair keys = kpg.generateKeyPair();
         this.publicKey = keys.getPublic();
         this.privateKey = keys.getPrivate();
-        pr_key = new String(this.privateKey.getEncoded(), "UTF-8");
-        pu_key = new String(this.publicKey.getEncoded(), "UTF-8");
+//        pr_key = new String(this.privateKey.getEncoded(), "UTF-8");
+//        pu_key = new String(this.publicKey.getEncoded(), "UTF-8");
+        pr_key = Base64.getEncoder().encodeToString(this.privateKey.getEncoded());
+        pu_key = Base64.getEncoder().encodeToString(this.publicKey.getEncoded());
 
         // Create data block
         this.data.put("public_key", pu_key);
@@ -436,10 +437,12 @@ public class Server {
     private PublicKey strToPubKey(String publicKey) {
         PublicKey pubKey1 = null;
         try {
-            byte[] publicBytes = publicKey.getBytes("UTF-8");
+//            byte[] publicBytes = publicKey.getBytes("UTF-8");
+            byte[] publicBytes = Base64.getDecoder().decode(publicKey);
             X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             pubKey1 = keyFactory.generatePublic(x509EncodedKeySpec);
+            System.out.println("Public Key is : "+ pubKey1);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -460,7 +463,9 @@ public class Server {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             cipher.init(Cipher.DECRYPT_MODE, decrypt_key);
             decrypted_str = new String(cipher.doFinal(decrypt_str.getBytes("UTF-8")), "UTF-8");
+            System.out.println("decrypt_rsa_pubkey - Decrypted String is "+decrypted_str);
         } catch (Exception e) {
+            e.printStackTrace();
             return "Failed";
         }
         return decrypted_str;
@@ -480,8 +485,10 @@ public class Server {
             cipher.init(Cipher.DECRYPT_MODE, decrypt_key);
             decrypted_str = new String(cipher.doFinal(decrypt_str.getBytes("UTF-8")), "UTF-8");
         } catch (Exception e) {
+            e.printStackTrace();
             return "Failed";
         }
+        System.out.println("decrypt_rsa - Decrypted String is "+decrypted_str);
         return decrypted_str;
     }
 
@@ -507,6 +514,7 @@ public class Server {
             e.printStackTrace();
             return "Failed";
         }
+        System.out.println("decrypt_aes - Decrypted String is "+decrypted_str);
         return decrypted_str;
     }
 }

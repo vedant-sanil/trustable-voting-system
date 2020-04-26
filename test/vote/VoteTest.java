@@ -382,6 +382,7 @@ abstract class VoteTest extends Test
         StatusReply reply;
         try
         {
+            System.out.println(requestURI);
             reply = sender.post(requestURI, requestBody, StatusReply.class);
             if (reply == null) throw new Exception();
         }
