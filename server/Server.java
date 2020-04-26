@@ -98,6 +98,65 @@ public class Server {
         this.becomeCandidates();
         this.getCandidates();
         this.castVote();
+        this.countVotes();
+    }
+
+    /**
+     * Function to count votes
+     */
+    private void countVotes() {
+        this.server_skeleton.createContext("/countvotes", (exchange -> {
+            System.out.println("=========COUNT VOTES========");
+            String jsonString = "";
+            int returnCode = 0;
+            if ("POST".equals(exchange.getRequestMethod())) {
+                CountVotesRequest countVotesRequest;
+                try {
+                    InputStreamReader isr  = new InputStreamReader(exchange.getRequestBody(), "utf-8");
+                    countVotesRequest = gson.fromJson(isr, CountVotesRequest.class);
+
+                    String candidate_to_count = countVotesRequest.getCountVotesFor();
+                    int count = 0;
+                    boolean found = false;
+
+                    // Get vote chain
+                    GetChainRequest request = new GetChainRequest(2);
+                    HttpResponse<String> response = this.getResponse("/getchain", this.node_port, request);
+                    GetChainReply getChainReply = gson.fromJson(response.body(), GetChainReply.class);
+
+                    for (Block block : getChainReply.getBlocks()) {
+                        System.out.println(block.getData());
+                        Map<String, String> vote = block.getData();
+                        String voted_for = vote.get("vote");
+                        System.out.println(candidate_to_count);
+                        System.out.println(voted_for);
+                        if (voted_for.equals(candidate_to_count)) {
+                            found = true;
+                            count++;
+                        }
+                    }
+
+                    if (found) {
+                        returnCode = 200;
+                        boolean success = true;
+                        CountVotesReply countVotesReply = new CountVotesReply(success, count);
+                        jsonString = gson.toJson(countVotesReply);
+                    } else {
+                        returnCode = 422;
+                        boolean success = false;
+                        String info = "InvalidCandidate";
+                        StatusReply statusReply = new StatusReply(success,info);
+                        jsonString = gson.toJson(statusReply);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                jsonString = "The REST method should be POST for <getCandidates>!\n";
+                returnCode = 400;
+            }
+            this.generateResponseAndClose(exchange, jsonString, returnCode);
+        }));
     }
 
     /**
@@ -189,7 +248,6 @@ public class Server {
                                         if (this.candidate_names.contains(candidate)) {
                                             // Add candidate to List
                                             list_names.add(votedFor.getUser_name());
-                                            System.out.println("_+_++_+_+_+_+_+_+_The List of Names are "+list_names);
                                             // Candidate succesfully voted for
                                             returnCode = 200;
                                             boolean success = true;
@@ -199,8 +257,8 @@ public class Server {
 
                                             // Add candidate to voting chain
                                             // Create data block
-                                            this.vote.put("voted_for", candidate);
-                                            this.vote.put("user_name", voter);
+                                            this.vote.put("vote", candidate);
+                                            this.vote.put("voter_credential", voter);
 
                                             // Mine a new block
                                             MineBlockRequest request1 = new MineBlockRequest(chain_id, this.vote);
