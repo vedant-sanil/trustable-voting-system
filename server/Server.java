@@ -22,6 +22,8 @@ import java.security.*;
 import message.*;
 
 import javax.crypto.Cipher;
+import javax.crypto.*;
+import java.security.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -114,10 +116,11 @@ public class Server {
 
                     String encrypted_vote_contents = castVoteRequest.getEncryptedVotes();
                     String encrypted_session_key = castVoteRequest.getEncryptedSessionKey();
+                    System.out.println("Encrypted Vote Contents : "+ encrypted_vote_contents);
+                    System.out.println("Encrypted Session Key : "+ encrypted_session_key);
+                    byte[] aes_session_key = this.decrypt_rsa(encrypted_session_key, this.privateKey);
 
-                    String aes_session_key = this.decrypt_rsa(encrypted_session_key, this.privateKey);
-
-                    if (aes_session_key.equals("Failed")) {
+                    if (aes_session_key == null) {
                         // Occurs if input vote string is malformed
                         returnCode = 200;
                         boolean success = false;
@@ -139,6 +142,7 @@ public class Server {
                             VoteContents voteContents = gson.fromJson(decrypted_vote_contents, VoteContents.class);
                             int chain_id = voteContents.getChain_id();
                             String voter = voteContents.getUser_name();
+                            System.out.println("Voter Name : "+ voter);
                             String encrypted_vote = voteContents.getEncrypted_vote();
                             String client_pubkey = "";
 
@@ -442,7 +446,7 @@ public class Server {
             X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             pubKey1 = keyFactory.generatePublic(x509EncodedKeySpec);
-            System.out.println("Public Key is : "+ pubKey1);
+            System.out.println("Public Key is : "+ publicKey);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -460,9 +464,9 @@ public class Server {
     private String decrypt_rsa_pubkey(String decrypt_str, PublicKey decrypt_key) {
         String decrypted_str = "";
         try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, decrypt_key);
-            decrypted_str = new String(cipher.doFinal(decrypt_str.getBytes("UTF-8")), "UTF-8");
+            decrypted_str = new String(cipher.doFinal(Base64.getDecoder().decode(decrypt_str)), "UTF-8");
             System.out.println("decrypt_rsa_pubkey - Decrypted String is "+decrypted_str);
         } catch (Exception e) {
             e.printStackTrace();
@@ -478,17 +482,21 @@ public class Server {
      * @return decrypted string
      * Encryption help taken from : https://www.devglan.com/java8/rsa-encryption-decryption-java
      */
-    private String decrypt_rsa(String decrypt_str, PrivateKey decrypt_key) {
-        String decrypted_str = "";
+    private byte[] decrypt_rsa(String decrypt_str, PrivateKey decrypt_key) {
+        byte[] decrypted_str;
         try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, decrypt_key);
-            decrypted_str = new String(cipher.doFinal(decrypt_str.getBytes("UTF-8")), "UTF-8");
+//            decrypted_str = new String(cipher.doFinal(decrypt_str.getBytes("UTF-8")), "UTF-8");
+            System.out.println("Private_key ");
+            System.out.println("decrypt_rsa - The string to Decrypt is "+decrypt_str);
+            byte[] test = Base64.getDecoder().decode(decrypt_str);
+            decrypted_str = cipher.doFinal(test);
+            System.out.println("decrypt_rsa - Decrypted String is "+new String(decrypted_str, "UTF-8"));
         } catch (Exception e) {
             e.printStackTrace();
-            return "Failed";
+            return null;
         }
-        System.out.println("decrypt_rsa - Decrypted String is "+decrypted_str);
         return decrypted_str;
     }
 
@@ -499,17 +507,15 @@ public class Server {
      * @return decrypted string
      * Encryption help taken from: https://www.includehelp.com/java-programs/encrypt-decrypt-string-using-aes-128-bits-encryption-algorithm.aspx
      */
-    private String decrypt_aes(String decrypt_str, String decrypt_key) {
+    private String decrypt_aes(String decrypt_str, byte[] decrypt_key) {
         String decrypted_str = "";
         try {
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            byte[] key = decrypt_key.getBytes("UTF-8");
-            SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(key);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
+            Cipher cipher = Cipher.getInstance("AES");
+            SecretKey secretKey = new SecretKeySpec(decrypt_key, 0, decrypt_key.length, "AES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey);
             Base64.Decoder decoder = Base64.getDecoder();
-            byte[] cipherText = decoder.decode(decrypt_key.getBytes("UTF-8"));
-            decrypted_str = new String(cipher.doFinal(), "UTF-8");
+            byte[] cipherText = decoder.decode(decrypt_str);
+            decrypted_str = new String(cipher.doFinal(cipherText), "UTF-8");
         } catch (Exception e) {
             e.printStackTrace();
             return "Failed";

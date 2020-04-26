@@ -383,6 +383,8 @@ abstract class VoteTest extends Test
         try
         {
             System.out.println(requestURI);
+            System.out.println("Chain ID: "+ requestBody.getChainId());
+            System.out.println("VotedFor : "+ requestBody.getVoteFor());
             reply = sender.post(requestURI, requestBody, StatusReply.class);
             if (reply == null) throw new Exception();
         }

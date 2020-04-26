@@ -157,7 +157,9 @@ public class CastVoteTest extends VoteTest
                 "Expect failure, return success.");
             }
 
-            // ask a client to vote for candidate
+//             ask a client to vote for candidate
+            System.out.println("My candidate is " + candidate);
+            System.out.println("My voter_port is " + voter_port);
             boolean first_success = voteForCandidate(voter_port, candidate);
             if (!first_success)
             {

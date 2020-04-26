@@ -107,12 +107,15 @@ public class Client {
                     int chain_id = startVoteRequest.getChainId();
                     String vote_for = startVoteRequest.getVoteFor();
 
+                    System.out.println("Chain Id which is come in "+ chain_id);
+                    System.out.println("vote_for which is come in "+ vote_for);
                     // Create a Voted for object to be encrypted
                     VotedFor votedFor = new VotedFor(this.user_name, vote_for);
                     String votedForString = gson.toJson(votedFor);
 
                     // Encrypt with client's private key
                     String encrypted_voted_for = this.encrypt_rsa_privkey(votedForString, this.privateKey);
+                    System.out.println("encrypted_voted_for at the StartVote" + encrypted_voted_for);
 
                     if (encrypted_voted_for.equals("Failed")) {
                         // Occurs if encryption fails with voted for
@@ -124,12 +127,15 @@ public class Client {
                     } else {
                         VoteContents voteContents = new VoteContents(chain_id, this.user_name, encrypted_voted_for);
                         String voteContentsString = gson.toJson(voteContents);
-
+                        System.out.println("Vote Content String : "+ voteContentsString);
                         // Generate AES Encryption Key
-                        String aes_encryption_key = "ABCDEFGHIJKLMNOP";
+                        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+                        keyGen.init(128);
+                        SecretKey secretKey = keyGen.generateKey();
+                        // Generate AES Key
 
                         // Encrypt vote contents with AES
-                        String encrypted_vote_content = this.encrypt(voteContentsString, aes_encryption_key);
+                        String encrypted_vote_content = this.encrypt(voteContentsString, secretKey);
 
                         if (encrypted_vote_content.equals("Failed")) {
                             // Occurs if AES encryption fails with vote contents
@@ -164,9 +170,9 @@ public class Client {
                                 jsonString = gson.toJson(statusReply);
                             } else {
                                 // Encrypt aes session key with server's public key
-                                System.out.println("Server Public Key is "+ server_pubkey.getBytes("UTF-8"));
+                                System.out.println("Server Public Key is "+ server_pubkey);
                                 PublicKey server_PublicKey = this.strToPubKey(server_pubkey);
-                                String encrypted_session_key = this.encrypt_rsa_pubkey(aes_encryption_key, server_PublicKey);
+                                String encrypted_session_key = this.encrypt_rsa_pubkey(secretKey, server_PublicKey);
 
                                 if (encrypted_session_key.equals("Failed")) {
                                     // Occurs if encryption fails while encrypting aes session key
@@ -177,7 +183,8 @@ public class Client {
                                     jsonString = gson.toJson(statusReply);
                                 } else {
                                     CastVoteRequest castVoteRequest = new CastVoteRequest(encrypted_vote_content, encrypted_session_key);
-
+                                    System.out.println("CastVoteRequest Encrypted Votes : "+ castVoteRequest.getEncryptedVotes());
+                                    System.out.println("CastVoteRequest Encrypted Session Key : "+ castVoteRequest.getEncryptedSessionKey());
                                     // Kick off cast vote in server
                                     HttpResponse<String> response2 = this.getResponse("/castvote", this.server_port, castVoteRequest);
                                     StatusReply statusReply = gson.fromJson(response2.body(), StatusReply.class);
@@ -226,6 +233,8 @@ public class Client {
         this.privateKey = keys.getPrivate();
         pr_key = Base64.getEncoder().encodeToString(this.privateKey.getEncoded());
         pu_key = Base64.getEncoder().encodeToString(this.publicKey.getEncoded());
+        System.out.println("After Encoding pr_key" + pu_key);
+        System.out.println("After Encoding pr_key" + pr_key);
 //        pr_key = new String(this.privateKey.getEncoded(), "UTF-8");
 //        pu_key = new String(this.publicKey.getEncoded(), "UTF-8");
 
@@ -262,7 +271,7 @@ public class Client {
      */
     public static void main(String[] args) throws FileNotFoundException, IOException, NoSuchAlgorithmException, InterruptedException {
         Random rand = new Random();
-        File file = new File("./Clientfile" + rand.nextInt() + ".output");
+        File file = new File("./Clientfile" + Integer.parseInt(args[0]) + ".output");
         PrintStream stream = new PrintStream(file);
         System.setOut(stream);
         System.setErr(stream);
@@ -330,15 +339,15 @@ public class Client {
     private String encrypt_rsa_privkey(String encrypt_str, PrivateKey encrypt_key) {
         String encrypted_str = "";
         try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, encrypt_key);
-            encrypted_str = new String(cipher.doFinal(encrypt_str.getBytes("UTF-8")), "UTF-8");
-//            System.out.println("encrypt_rsa_privkey - Encrypted String is "+encrypted_str);
+            encrypted_str = Base64.getEncoder().encodeToString(cipher.doFinal(encrypt_str.getBytes("UTF-8")));
+            System.out.println("encrypt_rsa_privkey - Encrypted String is "+encrypted_str);
         } catch (Exception e) {
             e.printStackTrace();
             return "Failed";
         }
-        return encrypt_str;
+        return encrypted_str;
     }
 
     /**
@@ -348,18 +357,18 @@ public class Client {
      * @return encrypted string
      * Encryption help taken from : https://www.devglan.com/java8/rsa-encryption-decryption-java
      */
-    private String encrypt_rsa_pubkey(String encrypt_str, PublicKey encrypt_key) {
+    private String encrypt_rsa_pubkey(SecretKey encrypt_str, PublicKey encrypt_key) {
         String encrypted_str = "";
         try {
-            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, encrypt_key);
-            encrypted_str = new String(cipher.doFinal(encrypt_str.getBytes("UTF-8")), "UTF-8");
+            encrypted_str = Base64.getEncoder().encodeToString(cipher.doFinal(encrypt_str.getEncoded()));
+            System.out.println("encrypt_rsa_pubkey - Encrypted Session Key String is "+encrypted_str);
         } catch (Exception e) {
             e.printStackTrace();
             return "Failed";
         }
-//        System.out.println("encrypt_rsa_pubkey - Encrypted String is "+encrypted_str);
-        return encrypt_str;
+        return encrypted_str;
     }
 
     /**
@@ -368,20 +377,16 @@ public class Client {
      * @return encrypted string
      * Encryption help taken from: https://www.includehelp.com/java-programs/encrypt-decrypt-string-using-aes-128-bits-encryption-algorithm.aspx
      */
-    private String encrypt(String encrypt_str, String encrypt_key) {
+    private String encrypt(String encrypt_str, SecretKey encrypt_key) {
         String encrypted_str = "";
-        MessageDigest sha = null;
         try {
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            byte[] key = encrypt_key.getBytes("UTF-8");
-            sha = MessageDigest.getInstance("SHA-1");
-            SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(key);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
-            byte[] cipherText = cipher.doFinal(encrypt_str.getBytes("UTF-8"));
+            Cipher cipher = Cipher.getInstance("AES");
+//            IvParameterSpec ivParameterSpec = new IvParameterSpec(key);
+            cipher.init(Cipher.ENCRYPT_MODE, encrypt_key);
+            byte[] cipherText = cipher.doFinal(encrypt_str.getBytes());
             Base64.Encoder encoder = Base64.getEncoder();
             encrypted_str = encoder.encodeToString(cipherText);
-//            System.out.println("encrypt - Encrypted String is "+encrypted_str);
+            System.out.println("encrypt - Encrypted String is "+encrypted_str);
         } catch (Exception e) {
             e.printStackTrace();
             return "Failed";
