@@ -179,8 +179,9 @@ public class Server {
                                     StatusReply statusReply = new StatusReply(success, info);
                                     jsonString = gson.toJson(statusReply);
                                 } else {
-                                    VotedFor votedFor = gson.fromJson(decrypted_vote_contents, VotedFor.class);
+                                    VotedFor votedFor = gson.fromJson(decrypted_voted_for, VotedFor.class);
                                     String candidate = votedFor.getVoted_for();
+                                    System.out.println("Candidate Name "+ candidate);
 
                                     if (this.candidate_names.contains(candidate)) {
                                         // Candidate succesfully voted for

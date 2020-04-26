@@ -185,6 +185,7 @@ public class Client {
                                     CastVoteRequest castVoteRequest = new CastVoteRequest(encrypted_vote_content, encrypted_session_key);
                                     System.out.println("CastVoteRequest Encrypted Votes : "+ castVoteRequest.getEncryptedVotes());
                                     System.out.println("CastVoteRequest Encrypted Session Key : "+ castVoteRequest.getEncryptedSessionKey());
+                                    System.out.println("Server Port is "+ server_port);
                                     // Kick off cast vote in server
                                     HttpResponse<String> response2 = this.getResponse("/castvote", this.server_port, castVoteRequest);
                                     StatusReply statusReply = gson.fromJson(response2.body(), StatusReply.class);
