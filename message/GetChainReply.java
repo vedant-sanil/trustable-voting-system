@@ -13,9 +13,9 @@ import java.util.List;
 
 
 public class GetChainReply {
-    public int chain_id;
-    public int chain_length;
-    public List<Block> blocks;
+    private int chain_id;
+    private int chain_length;
+    private List<Block> blocks;
 
     public GetChainReply(int chain_id, int chain_length, List<Block> blocks) {
         this.chain_id = chain_id;

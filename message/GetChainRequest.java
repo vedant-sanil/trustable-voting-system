@@ -10,7 +10,7 @@
  package message;
 
 public class GetChainRequest {
-    public int chain_id;
+    private int chain_id;
 
     public GetChainRequest(int chain_id) {
         this.chain_id = chain_id;

@@ -18,12 +18,12 @@ import java.util.TreeMap;
 // Blockchain class
 public class Block {
 
-    public long id = 0;
-    public Map<String, String> data = new TreeMap<String, String>();
-    public long timestamp = 0;
-    public long nonce = 0;
-    public String previous_hash = "";
-    public String hash = "dummy";
+    private long id = 0;
+    private Map<String, String> data = new TreeMap<String, String>();
+    private long timestamp = 0;
+    private long nonce = 0;
+    private String previous_hash = "";
+    private String hash = "dummy";
 
     // Constructor
     public Block() {}
