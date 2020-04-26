@@ -50,6 +50,8 @@ public class Server {
     public Map<String, String> vote = new LinkedHashMap<String, String>();
     /** List of eligible candidates */
     List<String> candidate_names;
+    /** List of already voted candidates */
+    List<String> list_names;
 
     public Server(int server_port, int node_port) throws IOException, NoSuchAlgorithmException, InterruptedException {
         this.server_port = server_port;
@@ -61,6 +63,7 @@ public class Server {
         // Initialize objects
         this.gson = new Gson();
         this.candidate_names = new ArrayList<String>();
+        this.list_names = new ArrayList<String>();
 
         // Register Server to blockchain
         this.register();
@@ -182,44 +185,55 @@ public class Server {
                                     VotedFor votedFor = gson.fromJson(decrypted_voted_for, VotedFor.class);
                                     String candidate = votedFor.getVoted_for();
                                     System.out.println("Candidate Name "+ candidate);
+                                    if (!this.list_names.contains(votedFor.getUser_name())) {
+                                        if (this.candidate_names.contains(candidate)) {
+                                            // Add candidate to List
+                                            list_names.add(votedFor.getUser_name());
+                                            System.out.println("_+_++_+_+_+_+_+_+_The List of Names are "+list_names);
+                                            // Candidate succesfully voted for
+                                            returnCode = 200;
+                                            boolean success = true;
+                                            String info = "VoteSuccessful";
+                                            StatusReply statusReply = new StatusReply(success, info);
+                                            jsonString = gson.toJson(statusReply);
 
-                                    if (this.candidate_names.contains(candidate)) {
-                                        // Candidate succesfully voted for
-                                        returnCode = 200;
-                                        boolean success = true;
-                                        String info = "VoteSuccessful";
-                                        StatusReply statusReply = new StatusReply(success, info);
-                                        jsonString = gson.toJson(statusReply);
+                                            // Add candidate to voting chain
+                                            // Create data block
+                                            this.vote.put("voted_for", candidate);
+                                            this.vote.put("user_name", voter);
 
-                                        // Add candidate to voting chain
-                                        // Create data block
-                                        this.vote.put("voted_for", candidate);
-                                        this.vote.put("user_name", voter);
+                                            // Mine a new block
+                                            MineBlockRequest request1 = new MineBlockRequest(chain_id, this.vote);
+                                            response = this.getResponse("/mineblock", this.node_port, request1);
+                                            BlockReply mined_reply = gson.fromJson(response.body(), BlockReply.class);
 
-                                        // Mine a new block
-                                        MineBlockRequest request1 = new MineBlockRequest(chain_id, this.vote);
-                                        response = this.getResponse("/mineblock", this.node_port, request1);
-                                        BlockReply mined_reply = gson.fromJson(response.body(), BlockReply.class);
-
-                                        // Add mined block to block chain
-                                        if (mined_reply.getChainId() == 2) {
-                                            Block new_block = mined_reply.getBlock();
-                                            AddBlockRequest request2 = new AddBlockRequest(chain_id, new_block);
-                                            response = this.getResponse("/addblock", this.node_port, request2);
-                                            StatusReply status = gson.fromJson(response.body(), StatusReply.class);
-                                            if (!status.getSuccess()) {
-                                                System.out.println("Block could not be added!");
+                                            // Add mined block to block chain
+                                            if (mined_reply.getChainId() == 2) {
+                                                Block new_block = mined_reply.getBlock();
+                                                AddBlockRequest request2 = new AddBlockRequest(chain_id, new_block);
+                                                response = this.getResponse("/addblock", this.node_port, request2);
+                                                StatusReply status = gson.fromJson(response.body(), StatusReply.class);
+                                                if (!status.getSuccess()) {
+                                                    System.out.println("Block could not be added!");
+                                                    return;
+                                                }
+                                            } else {
+                                                System.out.println("Incorrect chain!");
                                                 return;
                                             }
                                         } else {
-                                            System.out.println("Incorrect chain!");
-                                            return;
+                                            // Candidate not found
+                                            returnCode = 422;
+                                            boolean success = false;
+                                            String info = "InvalidCandidate";
+                                            StatusReply statusReply = new StatusReply(success, info);
+                                            jsonString = gson.toJson(statusReply);
                                         }
                                     } else {
-                                        // Candidate not found
-                                        returnCode = 422;
+                                        // Candidate already voted
+                                        returnCode = 409;
                                         boolean success = false;
-                                        String info = "InvalidCandidate";
+                                        String info = "DuplicateVote";
                                         StatusReply statusReply = new StatusReply(success, info);
                                         jsonString = gson.toJson(statusReply);
                                     }
