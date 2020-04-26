@@ -495,7 +495,7 @@ public class Server {
     private String decrypt_aes(String decrypt_str, String decrypt_key) {
         String decrypted_str = "";
         try {
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKC5PADDING");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             byte[] key = decrypt_key.getBytes("UTF-8");
             SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
             IvParameterSpec ivParameterSpec = new IvParameterSpec(key);

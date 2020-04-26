@@ -329,6 +329,7 @@ public class Client {
             cipher.init(Cipher.ENCRYPT_MODE, encrypt_key);
             encrypted_str = new String(cipher.doFinal(encrypt_str.getBytes("UTF-8")), "UTF-8");
         } catch (Exception e) {
+            e.printStackTrace();
             return "Failed";
         }
         return encrypt_str;
@@ -348,6 +349,7 @@ public class Client {
             cipher.init(Cipher.ENCRYPT_MODE, encrypt_key);
             encrypted_str = new String(cipher.doFinal(encrypt_str.getBytes("UTF-8")), "UTF-8");
         } catch (Exception e) {
+            e.printStackTrace();
             return "Failed";
         }
         return encrypt_str;
@@ -362,7 +364,7 @@ public class Client {
     private String encrypt(String encrypt_str, String encrypt_key) {
         String encrypted_str = "";
         try {
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKC5PADDING");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             byte[] key = encrypt_key.getBytes("UTF-8");
             SecretKeySpec secretKey = new SecretKeySpec(key, "AES");
             IvParameterSpec ivParameterSpec = new IvParameterSpec(key);

@@ -391,7 +391,7 @@ abstract class VoteTest extends Test
                     "No response or incorrect format.");
 
         }
-
+        System.out.println(reply.getInfo());
         return reply.getSuccess();
     }
 }
