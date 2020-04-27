@@ -353,7 +353,6 @@ abstract class VoteTest extends Test
         StatusReply response;
         try
         {
-            System.out.println(candidateURI);
             response = sender.post(candidateURI, requestBody, StatusReply.class);
             if (response == null) throw new Exception();
         } catch (Exception e) {
@@ -382,9 +381,6 @@ abstract class VoteTest extends Test
         StatusReply reply;
         try
         {
-            System.out.println(requestURI);
-            System.out.println("Chain ID: "+ requestBody.getChainId());
-            System.out.println("VotedFor : "+ requestBody.getVoteFor());
             reply = sender.post(requestURI, requestBody, StatusReply.class);
             if (reply == null) throw new Exception();
         }
@@ -394,7 +390,7 @@ abstract class VoteTest extends Test
                     "No response or incorrect format.");
 
         }
-        System.out.println(reply.getInfo());
+
         return reply.getSuccess();
     }
 }

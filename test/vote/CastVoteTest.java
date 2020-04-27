@@ -22,10 +22,6 @@
 
 package test.vote;
 
-import java.io.*;
-
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +55,6 @@ public class CastVoteTest extends VoteTest
 
         // Perform the CastVote tests
         testMalformedVote();
-        System.out.println("Malformed test done!");
         testCorrectAndFakeVotes();
     }
 
@@ -111,10 +106,8 @@ public class CastVoteTest extends VoteTest
         CastVoteRequest castVoteRequest = new CastVoteRequest(incorrect_vote, incorrect_vote);
 
         StatusReply statusReply;
-
         try
         {
-            System.out.println(requestURI);
             statusReply = sender.post(requestURI, castVoteRequest,
                     StatusReply.class);
             if (statusReply == null) throw new Exception();
@@ -157,9 +150,7 @@ public class CastVoteTest extends VoteTest
                 "Expect failure, return success.");
             }
 
-//             ask a client to vote for candidate
-            System.out.println("My candidate is " + candidate);
-            System.out.println("My voter_port is " + voter_port);
+            // ask a client to vote for candidate
             boolean first_success = voteForCandidate(voter_port, candidate);
             if (!first_success)
             {

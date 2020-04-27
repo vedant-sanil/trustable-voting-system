@@ -106,7 +106,7 @@ public class Server {
      */
     private void countVotes() {
         this.server_skeleton.createContext("/countvotes", (exchange -> {
-            System.out.println("=========COUNT VOTES========");
+
             String jsonString = "";
             int returnCode = 0;
             if ("POST".equals(exchange.getRequestMethod())) {
@@ -125,17 +125,17 @@ public class Server {
                     GetChainReply getChainReply = gson.fromJson(response.body(), GetChainReply.class);
 
                     for (Block block : getChainReply.getBlocks()) {
-                        System.out.println(block.getData());
+
                         Map<String, String> vote = block.getData();
                         String voted_for = vote.get("vote");
-                        System.out.println(candidate_to_count);
-                        System.out.println(voted_for);
+
                         if (voted_for.equals(candidate_to_count)) {
                             found = true;
                             count++;
                         }
                     }
 
+                    // Check if Block is found
                     if (found) {
                         returnCode = 200;
                         boolean success = true;
@@ -163,13 +163,10 @@ public class Server {
      * Method to cast votes for a candidate
      */
     private void castVote() {
-        //System.out.println("=========CAST VOTES REGISTERED========");
         this.server_skeleton.createContext("/castvote", (exchange -> {
-            System.out.println("=========CAST VOTES========");
             String jsonString = "";
             int returnCode = 0;
             boolean found = false;
-
             if ("POST".equals(exchange.getRequestMethod())) {
                 CastVoteRequest castVoteRequest = null;
                 try {
@@ -178,8 +175,7 @@ public class Server {
 
                     String encrypted_vote_contents = castVoteRequest.getEncryptedVotes();
                     String encrypted_session_key = castVoteRequest.getEncryptedSessionKey();
-                    System.out.println("Encrypted Vote Contents : "+ encrypted_vote_contents);
-                    System.out.println("Encrypted Session Key : "+ encrypted_session_key);
+
                     byte[] aes_session_key = this.decrypt_rsa(encrypted_session_key, this.privateKey);
 
                     if (aes_session_key == null) {
@@ -204,7 +200,7 @@ public class Server {
                             VoteContents voteContents = gson.fromJson(decrypted_vote_contents, VoteContents.class);
                             int chain_id = voteContents.getChain_id();
                             String voter = voteContents.getUser_name();
-                            System.out.println("Voter Name : "+ voter);
+
                             String encrypted_vote = voteContents.getEncrypted_vote();
                             String client_pubkey = "";
 
@@ -243,7 +239,7 @@ public class Server {
                                 } else {
                                     VotedFor votedFor = gson.fromJson(decrypted_voted_for, VotedFor.class);
                                     String candidate = votedFor.getVoted_for();
-                                    System.out.println("Candidate Name "+ candidate);
+
                                     if (!this.list_names.contains(votedFor.getUser_name())) {
                                         if (this.candidate_names.contains(candidate)) {
                                             // Add candidate to List
@@ -258,7 +254,7 @@ public class Server {
                                             // Add candidate to voting chain
                                             // Create data block
                                             this.vote.put("vote", candidate);
-                                            this.vote.put("voter_credential", voter);
+                                            this.vote.put("voter_credential", this.encrypt_rsa_pubkey(voter, client_publicKey));
 
                                             // Mine a new block
                                             MineBlockRequest request1 = new MineBlockRequest(chain_id, this.vote);
@@ -272,11 +268,9 @@ public class Server {
                                                 response = this.getResponse("/addblock", this.node_port, request2);
                                                 StatusReply status = gson.fromJson(response.body(), StatusReply.class);
                                                 if (!status.getSuccess()) {
-                                                    System.out.println("Block could not be added!");
                                                     return;
                                                 }
                                             } else {
-                                                System.out.println("Incorrect chain!");
                                                 return;
                                             }
                                         } else {
@@ -308,7 +302,7 @@ public class Server {
             }
             this.generateResponseAndClose(exchange, jsonString, returnCode);
         }));
-        //System.out.println("=========CAST VOTES REGISTERED  END========");
+        //
     }
 
     /**
@@ -316,7 +310,7 @@ public class Server {
      */
     private void becomeCandidates() {
         this.server_skeleton.createContext("/becomecandidate", (exchange -> {
-            System.out.println("=========BECOME CANDIDATES========");
+
             String jsonString = "";
             BecomeCandidateRequest becomeCandidateRequest = null;
             StatusReply statusReply = null;
@@ -385,7 +379,7 @@ public class Server {
      */
     private void getCandidates() {
         this.server_skeleton.createContext("/getcandidates", (exchange -> {
-            System.out.println("=========GET CANDIDATES========");
+
             String jsonString = "";
             int returnCode = 0;
             if ("POST".equals(exchange.getRequestMethod())) {
@@ -415,8 +409,6 @@ public class Server {
         KeyPair keys = kpg.generateKeyPair();
         this.publicKey = keys.getPublic();
         this.privateKey = keys.getPrivate();
-//        pr_key = new String(this.privateKey.getEncoded(), "UTF-8");
-//        pu_key = new String(this.publicKey.getEncoded(), "UTF-8");
         pr_key = Base64.getEncoder().encodeToString(this.privateKey.getEncoded());
         pu_key = Base64.getEncoder().encodeToString(this.publicKey.getEncoded());
 
@@ -436,11 +428,9 @@ public class Server {
             response = this.getResponse("/addblock", this.node_port, request1);
             StatusReply status = gson.fromJson(response.body(), StatusReply.class);
             if (!status.getSuccess()) {
-                System.out.println("Block could not be added!");
                 return;
             }
         } else {
-            System.out.println("Incorrect chain!");
             return;
         }
     }
@@ -456,7 +446,6 @@ public class Server {
         PrintStream stream = new PrintStream(file);
         System.setOut(stream);
         System.setErr(stream);
-
         // Begin a server by providing server port and a single node port
         Server s = new Server(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
         s.start();
@@ -474,13 +463,11 @@ public class Server {
     private HttpResponse<String> getResponse(String method,
                                              int port,
                                              Object requestObj) throws IOException, InterruptedException {
-
         HttpResponse<String> response;
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create("http://localhost:" + port + method))
                 .setHeader("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(requestObj)))
                 .build();
-        System.out.println("HTTP Request is "+request);
         try {
             response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
             return response;
@@ -503,7 +490,6 @@ public class Server {
         output.write(respText.getBytes());
         output.flush();
         exchange.close();
-        System.out.println("++++++++++++++++++++++++++++++++");
     }
 
     /**
@@ -514,12 +500,10 @@ public class Server {
     private PublicKey strToPubKey(String publicKey) {
         PublicKey pubKey1 = null;
         try {
-//            byte[] publicBytes = publicKey.getBytes("UTF-8");
             byte[] publicBytes = Base64.getDecoder().decode(publicKey);
             X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(publicBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             pubKey1 = keyFactory.generatePublic(x509EncodedKeySpec);
-            System.out.println("Public Key is : "+ publicKey);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -540,7 +524,7 @@ public class Server {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, decrypt_key);
             decrypted_str = new String(cipher.doFinal(Base64.getDecoder().decode(decrypt_str)), "UTF-8");
-            System.out.println("decrypt_rsa_pubkey - Decrypted String is "+decrypted_str);
+
         } catch (Exception e) {
             e.printStackTrace();
             return "Failed";
@@ -560,17 +544,34 @@ public class Server {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, decrypt_key);
-//            decrypted_str = new String(cipher.doFinal(decrypt_str.getBytes("UTF-8")), "UTF-8");
-            System.out.println("Private_key ");
-            System.out.println("decrypt_rsa - The string to Decrypt is "+decrypt_str);
             byte[] test = Base64.getDecoder().decode(decrypt_str);
             decrypted_str = cipher.doFinal(test);
-            System.out.println("decrypt_rsa - Decrypted String is "+new String(decrypted_str, "UTF-8"));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
         return decrypted_str;
+    }
+
+
+    /**
+     * Method to encrypt string using RSA 2048 and public key
+     * @param decrypt_str : string to be encrytped
+     * @param decrypt_key : encryption key (RSA)
+     * @return encrypted string
+     * Encryption help taken from : https://www.devglan.com/java8/rsa-encryption-decryption-java
+     */
+    private String encrypt_rsa_pubkey(String encrypt_str, PublicKey encrypt_key) {
+        String encrypted_str = "";
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, encrypt_key);
+            encrypted_str = Base64.getEncoder().encodeToString(cipher.doFinal(encrypt_str.getBytes("UTF-8")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Failed";
+        }
+        return encrypted_str;
     }
 
     /**
@@ -593,7 +594,7 @@ public class Server {
             e.printStackTrace();
             return "Failed";
         }
-        System.out.println("decrypt_aes - Decrypted String is "+decrypted_str);
+
         return decrypted_str;
     }
 }

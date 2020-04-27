@@ -1,0 +1,208 @@
+javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
+java -cp .:"/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" test.ConformanceTests
+Testing blockchain message handling... failed
+Testing blockchain initial setup & basic mining... failed
+Testing blockchain consensus... failed
+Testing blockchain performance... failed
+
+failed test:    MessageTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MessageTest.testGetChainRequest(MessageTest.java:72)
+	at test.blockchain.MessageTest.perform(MessageTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    MiningTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MiningTest.testInitialState(MiningTest.java:69)
+	at test.blockchain.MiningTest.perform(MiningTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    ConsensusTest
+reason:         MineBlock failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: MineBlock failed: No response or incorrect format.
+	at test.blockchain.NodeTest.mineBlock(NodeTest.java:191)
+	at test.blockchain.ConsensusTest.testAgree(ConsensusTest.java:71)
+	at test.blockchain.ConsensusTest.perform(ConsensusTest.java:46)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    SpeedTest
+reason:         test timed out
+
+passed: 0       failed: 4       not run: 0
+score: 0.00/100
+javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
+java -cp .:"/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" test.ConformanceTests
+Testing blockchain message handling... failed
+Testing blockchain initial setup & basic mining... failed
+Testing blockchain consensus... failed
+Testing blockchain performance... failed
+
+failed test:    MessageTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MessageTest.testGetChainRequest(MessageTest.java:72)
+	at test.blockchain.MessageTest.perform(MessageTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    MiningTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MiningTest.testInitialState(MiningTest.java:69)
+	at test.blockchain.MiningTest.perform(MiningTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    ConsensusTest
+reason:         MineBlock failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: MineBlock failed: No response or incorrect format.
+	at test.blockchain.NodeTest.mineBlock(NodeTest.java:191)
+	at test.blockchain.ConsensusTest.testAgree(ConsensusTest.java:71)
+	at test.blockchain.ConsensusTest.perform(ConsensusTest.java:46)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    SpeedTest
+reason:         test timed out
+
+passed: 0       failed: 4       not run: 0
+score: 0.00/100
+javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
+java -cp .:"/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" test.ConformanceTests
+Testing blockchain message handling... failed
+Testing blockchain initial setup & basic mining... failed
+Testing blockchain consensus... failed
+Testing blockchain performance... failed
+
+failed test:    MessageTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MessageTest.testGetChainRequest(MessageTest.java:72)
+	at test.blockchain.MessageTest.perform(MessageTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    MiningTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MiningTest.testInitialState(MiningTest.java:69)
+	at test.blockchain.MiningTest.perform(MiningTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    ConsensusTest
+reason:         MineBlock failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: MineBlock failed: No response or incorrect format.
+	at test.blockchain.NodeTest.mineBlock(NodeTest.java:191)
+	at test.blockchain.ConsensusTest.testAgree(ConsensusTest.java:71)
+	at test.blockchain.ConsensusTest.perform(ConsensusTest.java:46)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    SpeedTest
+reason:         test timed out
+
+passed: 0       failed: 4       not run: 0
+score: 0.00/100
+javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
+java -cp .:"/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" test.ConformanceTests
+Testing blockchain message handling... failed
+Testing blockchain initial setup & basic mining... failed
+Testing blockchain consensus... failed
+Testing blockchain performance... failed
+
+failed test:    MessageTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MessageTest.testGetChainRequest(MessageTest.java:72)
+	at test.blockchain.MessageTest.perform(MessageTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    MiningTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MiningTest.testInitialState(MiningTest.java:69)
+	at test.blockchain.MiningTest.perform(MiningTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    ConsensusTest
+reason:         MineBlock failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: MineBlock failed: No response or incorrect format.
+	at test.blockchain.NodeTest.mineBlock(NodeTest.java:191)
+	at test.blockchain.ConsensusTest.testAgree(ConsensusTest.java:71)
+	at test.blockchain.ConsensusTest.perform(ConsensusTest.java:46)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    SpeedTest
+reason:         test timed out
+
+passed: 0       failed: 4       not run: 0
+score: 0.00/100
+javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
+java -cp .:"/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" test.ConformanceTests
+Testing blockchain message handling... failed
+Testing blockchain initial setup & basic mining... failed
+Testing blockchain consensus... failed
+Testing blockchain performance... failed
+
+failed test:    MessageTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MessageTest.testGetChainRequest(MessageTest.java:72)
+	at test.blockchain.MessageTest.perform(MessageTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    MiningTest
+reason:         GetBlockChain failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: GetBlockChain failed: No response or incorrect format.
+	at test.blockchain.MiningTest.testInitialState(MiningTest.java:69)
+	at test.blockchain.MiningTest.perform(MiningTest.java:39)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    ConsensusTest
+reason:         MineBlock failed: No response or incorrect format.
+stack trace:    
+test.util.TestFailed: MineBlock failed: No response or incorrect format.
+	at test.blockchain.NodeTest.mineBlock(NodeTest.java:191)
+	at test.blockchain.ConsensusTest.testAgree(ConsensusTest.java:71)
+	at test.blockchain.ConsensusTest.perform(ConsensusTest.java:46)
+	at test.util.Series$TestThread.run(Series.java:597)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+
+failed test:    SpeedTest
+reason:         test timed out
+
+passed: 0       failed: 4       not run: 0
+score: 0.00/100
+javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
+java -cp .:"/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" test.ConformanceTests
+Testing blockchain message handling... failed
+Testing blockchain initial setup & basic mining... failed
+Testing blockchain consensus... failed
+Testing blockchain performance...javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
+javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
+javac -Xlint -cp "/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/commons-codec-1.11.jar:/afs/andrew.cmu.edu/usr15/sharaths/trustable-voting-system/gson-2.8.6.jar" */*.java */*/*.java
