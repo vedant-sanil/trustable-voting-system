@@ -271,12 +271,6 @@ public class Client {
      * @throws IOException
      */
     public static void main(String[] args) throws FileNotFoundException, IOException, NoSuchAlgorithmException, InterruptedException {
-        Random rand = new Random();
-        File file = new File("./Clientfile" + Integer.parseInt(args[0]) + ".output");
-        PrintStream stream = new PrintStream(file);
-        System.setOut(stream);
-        System.setErr(stream);
-
         // Begin a client by providing client port and a single node port
         Client c = new Client(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
         c.start();

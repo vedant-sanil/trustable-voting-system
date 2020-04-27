@@ -117,26 +117,29 @@ public class Server {
 
                     String candidate_to_count = countVotesRequest.getCountVotesFor();
                     int count = 0;
-                    boolean found = false;
+                    boolean block_found = false;
 
                     // Get vote chain
                     GetChainRequest request = new GetChainRequest(2);
                     HttpResponse<String> response = this.getResponse("/getchain", this.node_port, request);
                     GetChainReply getChainReply = gson.fromJson(response.body(), GetChainReply.class);
 
-                    for (Block block : getChainReply.getBlocks()) {
+                    // Check if block has been encountered while voting but not in blockchain
+                    if (list_names.contains(candidate_to_count)) {
+                        block_found = true;
+                    }
 
+                    // Check if block in blockchain
+                    for (Block block : getChainReply.getBlocks()) {
                         Map<String, String> vote = block.getData();
                         String voted_for = vote.get("vote");
-
                         if (voted_for.equals(candidate_to_count)) {
-                            found = true;
                             count++;
                         }
                     }
 
-                    // Check if Block is found
-                    if (found) {
+                    // If block either in blockchain or has voted, then return count
+                    if (block_found) {
                         returnCode = 200;
                         boolean success = true;
                         CountVotesReply countVotesReply = new CountVotesReply(success, count);
@@ -442,10 +445,6 @@ public class Server {
      * @throws IOException
      */
     public static void main(String[] args) throws FileNotFoundException, IOException, NoSuchAlgorithmException, InterruptedException {
-        File file = new File("./Serverfile.output");
-        PrintStream stream = new PrintStream(file);
-        System.setOut(stream);
-        System.setErr(stream);
         // Begin a server by providing server port and a single node port
         Server s = new Server(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
         s.start();
